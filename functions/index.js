@@ -35,7 +35,7 @@ app.use(cors({origin: true}));
 
 app.get('/spotify/search-artist/:q', (req, res) => {
 	(async () => {
-		const searchParams = { limit: 5 };
+		const searchParams = { limit: 10 };
 		try {
 			await getSpotifyAccessToken();
 			const response = await spotifyApi
