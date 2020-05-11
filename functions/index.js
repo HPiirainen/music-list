@@ -85,9 +85,17 @@ app.get('/spotify/get-artist-albums/:artist_id', (req, res) => {
 app.post('/api/create-item', (req, res) => {
 	(async () => {
 		try {
-			await db.collection('items').doc('/' + req.body.id + '/')
-				.create({item: req.body.item});
-			return res.status(200).send();
+			const item = req.body;
+			let itemId = item.artistId;
+			if (item.albumId) {
+				itemId += item.albumId;
+			}
+			item.createdAt = admin.firestore.Timestamp.fromDate(new Date());
+			await db
+				.collection('items')
+				.doc(itemId)
+				.create(item);
+			return res.status(200).send(itemId);
 		} catch(error) {
 			console.log(error);
 			return res.status(500).send(error);
@@ -99,10 +107,10 @@ app.post('/api/create-item', (req, res) => {
 app.get('/api/read-items', (req, res) => {
 	(async () => {
 		try {
-			let query = db.collection('items');
-			let response = [];
-			await query.get().then(querySnapshot => {
-				let docs = querySnapshot.docs;
+			const query = db.collection('items');
+			const response = [];
+			await query.get().then(snapshot => {
+				const docs = snapshot.docs;
 				docs.forEach(doc => {
 					response.push({
 						id: doc.id,
@@ -111,6 +119,47 @@ app.get('/api/read-items', (req, res) => {
 				});
 			});
 			return res.status(200).send(response);
+		} catch (error) {
+			console.log(error);
+			return res.status(500).send(error);
+		}
+	})();
+});
+
+// Read by list ID
+app.get('/api/read-items/:list_id', (req, res) => {
+	(async () => {
+        try {
+            const query = db
+                .collection('items')
+				.where('listId', '==', parseInt(req.params.list_id))
+				.orderBy('createdAt');
+            const response = [];
+            await query.get().then(snapshot => {
+                snapshot.forEach(doc => {
+                    response.push(doc.data());
+                });
+            });
+            return res.status(200).send(response);
+        } catch (error) {
+            console.log(error);
+            return res.status(500).send(error);
+        }
+	})();
+});
+
+// Read single item
+app.get('/api/read-item/:item_id', (req, res) => {
+	(async () => {
+		try {
+			const query = db.collection('items').doc(req.params.item_id);
+			let response = null;
+			await query.get().then(doc => {
+				if (doc.exists) {
+					response = doc.data();
+				}
+			});
+			return response ? res.status(200).send(response) : res.status(404).send();
 		} catch (error) {
 			console.log(error);
 			return res.status(500).send(error);
