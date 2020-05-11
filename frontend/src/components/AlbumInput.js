@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import {
 	Autocomplete,
@@ -6,34 +7,19 @@ import {
 import {
   TextField,
   Typography,
-  Avatar,
 } from '@material-ui/core';
 import AlbumIcon from '@material-ui/icons/Album';
+import AvatarImage from './AvatarImage';
 
 const styles = theme => ({
-  image: {
-    width: theme.spacing(8),
-    height: theme.spacing(8),
-    marginRight: theme.spacing(2),
-  },
+  
 });
 
 class AlbumInput extends Component {
-	constructor(props) {
-    super(props);
-  }
-  
-  handleInputChange = (e, value) => {
-    console.log('onChange', value);
-  }
 
-  getImage = (album) => {
-    const { classes } = this.props;
-    const image = album.images.find(image => image.width <= 300);
-    if (image) {
-      return <Avatar alt={album.name} src={image.url} className={classes.image} />
-    }
-    return <Avatar className={classes.image}><AlbumIcon /></Avatar>
+  handleInputChange = (e, value) => {
+    const { onSelectAlbum } = this.props;
+    onSelectAlbum(value);
   }
 
   getYear = (dateString) => {
@@ -42,7 +28,11 @@ class AlbumInput extends Component {
 
   renderAlbum = (album) => (
     <React.Fragment>
-      {this.getImage(album)}
+      <AvatarImage
+        images={album.images}
+        alt={album.name}
+        fallback={<AlbumIcon style={{ fontSize: 42 }} />}
+        imageSize="medium" />
       <Typography variant="subtitle1">{ album.name } <small>({ this.getYear(album.release_date) })</small></Typography>
     </React.Fragment>
   )
@@ -66,6 +56,11 @@ class AlbumInput extends Component {
       />
     )
 	}
+}
+
+AlbumInput.propTypes = {
+  albums: PropTypes.arrayOf(PropTypes.object).isRequired,
+  showInput: PropTypes.bool,
 }
 
 export default withStyles(styles)(AlbumInput);

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {
 	TextField,
 } from '@material-ui/core';
@@ -18,11 +19,12 @@ class ArtistInput extends Component {
   }
   
   handleInputChange = (e) => {
+    const { onInputChange } = this.props;
     const query = e.target.value;
     this.setState({
       query,
     }, () => {
-      this.props.onInputChange(query);
+      onInputChange(query);
     });
   }
 
@@ -42,6 +44,11 @@ class ArtistInput extends Component {
       />
     )
 	}
+}
+
+ArtistInput.propTypes = {
+  showInput: PropTypes.bool,
+  onInputChange: PropTypes.func,
 }
 
 export default ArtistInput;

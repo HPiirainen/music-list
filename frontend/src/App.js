@@ -1,22 +1,42 @@
 import React, { Component } from 'react';
+import update from 'immutability-helper';
 import {
   Container,
   Box,
 } from '@material-ui/core';
 import axios from 'axios';
 import ArtistInput from './components/ArtistInput';
-import ArtistList from './components/ArtistList';
-import Artist from './components/Artist';
+import ArtistResultList from './components/ArtistResultList';
+import ActiveArtist from './components/ActiveArtist';
 import AlbumInput from './components/AlbumInput';
+import MusicListContainer from './components/MusicListContainer';
 import './App.css';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      lists: [
+        {
+          id: 1,
+          title: 'Queue',
+          items: {},
+        },
+        {
+          id: 2,
+          title: 'History',
+          items: {},
+        },
+        {
+          id: 3,
+          title: 'Long-term',
+          items: {},
+        }
+      ],
       activeArtist: {},
-      artistResults: {},
-      albums: {},
+      artistResults: [],
+      activeAlbum: {},
+      albums: [],
       loading: false,
       message: '',
     };
@@ -24,8 +44,43 @@ class App extends Component {
     this.artistInput = React.createRef();
   }
 
+  componentDidMount = () => {
+    this.loadListItems();
+  }
+
   getApiBaseUrl = () => {
     return 'http://localhost:5001/music-app-a2bd9/us-central1/app';
+  }
+
+  loadListItems = () => {
+    const { lists } = this.state;
+    const readItemsFromListUrl = `${this.getApiBaseUrl()}/api/read-items`;
+    Promise.all(lists.map(list => axios.get(`${readItemsFromListUrl}/${list.id}`)))
+      .then(axios.spread((...responses) => {
+        const listsWithItems = lists.map((list, index) => {
+          return { ...list, items: responses[index].data };
+        });
+        this.setState({
+          lists: listsWithItems,
+        });
+      }))
+      .catch(error => {
+        console.log(error);
+      });
+  }
+
+  readItem = async (id) => {
+    const readItemUrl = `${this.getApiBaseUrl()}/api/read-item/${id}`;
+    const item = await axios
+      .get(readItemUrl)
+      .then(response => {
+        return response.data;
+      })
+      .catch(error => {
+        console.log(error);
+        return {};
+      });
+    return item;
   }
 
   fetchArtists = (query) => {
@@ -34,7 +89,7 @@ class App extends Component {
     }
     this.cancel = axios.CancelToken.source();
     if (query.length === 0) {
-      this.setState({ artistResults: {} });
+      this.setState({ artistResults: [] });
       return;
     }
     const artistSearchUrl = `${this.getApiBaseUrl()}/spotify/search-artist/${query}`;
@@ -44,7 +99,6 @@ class App extends Component {
         { cancelToken: this.cancel.token }
       )
       .then(response => {
-        console.log(response.data);
         this.setState({
           artistResults: response.data,
           message: '',
@@ -65,7 +119,7 @@ class App extends Component {
       this.cancel.cancel();
     }
     this.cancel = axios.CancelToken.source();
-    this.setState({loading: true});
+    this.setState({ loading: true });
     const albumSearchUrl = `${this.getApiBaseUrl()}/spotify/get-artist-albums/${activeArtist.id}`;
     axios
       .get(
@@ -93,11 +147,110 @@ class App extends Component {
   setArtist = (artist) => {
     this.setState({
       activeArtist: artist,
-      artistResults: {},
+      artistResults: [],
     }, () => {
       this.fetchArtistAlbums();
     });
     this.artistInput.current.clearQuery();
+  }
+
+  setAlbum = (album) => {
+    this.setState({
+      activeAlbum: album,
+      albums: [],
+    }, () => {
+      this.addActiveToList();
+    });
+  }
+
+  appendItemToList = (item, listId = 1) => {
+    const { lists } = this.state;
+    const listIndex = lists.findIndex(list => list.id === listId);
+    if (listIndex === -1) {
+      return false;
+    }
+    this.setState({
+      lists: update(this.state.lists, {[listIndex]: {items: {$push: [item]}}}),
+    });
+  }
+
+  addActiveToList = (listId = 1) => {
+    if (!this.hasActiveArtist()) {
+      return;
+    }
+    const {
+      activeArtist: {
+        id: artistId,
+        name: artistName,
+        href: artistUrl,
+        images: artistImages,
+        genres: artistGenres,
+      },
+      activeAlbum: {
+        id: albumId,
+        name: albumName,
+        href: albumUrl,
+        images: albumImages,
+        release_date: albumReleaseDate,
+        total_tracks: albumTracksAmount,
+      },
+    } = this.state || {};
+    const item = {
+      listId,
+      artistId,
+      artistName,
+      artistUrl,
+      artistImages,
+      artistGenres,
+      albumId: albumId || null,
+      albumName: albumName || null,
+      albumUrl: albumUrl || null,
+      albumImages: albumImages || null,
+      albumReleaseDate: albumReleaseDate || null,
+      albumTracksAmount: albumTracksAmount || null,
+    };
+    console.log(item);
+    if (this.cancel) {
+      this.cancel.cancel();
+    }
+    this.cancel = axios.CancelToken.source();
+    this.setState({loading: true});
+    const createItemUrl = `${this.getApiBaseUrl()}/api/create-item`;
+    axios
+      .post(
+        createItemUrl,
+        item,
+        { cancelToken: this.cancel.token }
+      )
+      .then(response => {
+        this.setState({
+          loading: false,
+          activeArtist: {},
+          activeAlbum: {},
+        });
+        console.log(response);
+        return response.data;
+      })
+      .then(itemId => {
+        return this.readItem(itemId);
+      })
+      .then(item => {
+        this.appendItemToList(item, 1);
+      })
+      .catch(error => {
+        if (axios.isCancel(error) || error) {
+          console.log(error);
+          this.setState({
+            loading: false,
+            message: 'Failed to create item. Please try again.',
+          });
+        }
+      });
+  }
+
+  hasActiveArtist = () => {
+    const { activeArtist } = this.state;
+    return Object.keys(activeArtist).length > 0;
   }
 
   clearActiveArtist = () => {
@@ -107,13 +260,12 @@ class App extends Component {
   }
 
   isArtistInputVisible = () => {
-    const { activeArtist } = this.state;
-    return Object.keys(activeArtist).length === 0;
+    return !this.hasActiveArtist();
   }
 
   isAlbumInputVisible = () => {
-    const { activeArtist, loading } = this.state;
-    return Object.keys(activeArtist).length && !loading;
+    const { loading } = this.state;
+    return this.hasActiveArtist() && !loading;
   }
 
   renderArtists = () => {
@@ -137,18 +289,21 @@ class App extends Component {
           ref={this.artistInput}
           showInput={this.isArtistInputVisible()}
           onInputChange={this.fetchArtists} />
-        <ArtistList
+        <ArtistResultList
           artists={this.state.artistResults}
           onSelectArtist={this.setArtist} />
-        <Artist
-          type="block"
+        <ActiveArtist
           artist={this.state.activeArtist}
-          onDismiss={this.clearActiveArtist} />
+          onDismiss={this.clearActiveArtist}
+          onAdd={this.addActiveToList} />
         <Box my={2}>
           <AlbumInput
             albums={this.state.albums}
-            showInput={this.isAlbumInputVisible()} />
+            showInput={this.isAlbumInputVisible()}
+            onSelectAlbum={this.setAlbum} />
         </Box>
+        <MusicListContainer
+          lists={this.state.lists} />
       </Box>
     </Container>
   )

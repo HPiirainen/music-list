@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import {
   Box,
   List,
   Divider,
 } from '@material-ui/core';
-import Artist from './Artist';
+import ArtistResultListItem from './ArtistResultListItem';
 
-class ArtistList extends Component {
+class ArtistResultList extends Component {
 
 	render = () => {
     const { artists, onSelectArtist } = this.props;
@@ -14,7 +15,7 @@ class ArtistList extends Component {
     if (artists.length) {
       const items = artists.map(artist => (
         <React.Fragment key={artist.id}>
-          <Artist type="list" artist={artist} onSelectArtist={onSelectArtist}></Artist>
+          <ArtistResultListItem artist={artist} onSelectArtist={onSelectArtist} />
           <Divider component="li" />
         </React.Fragment>
       ));
@@ -28,4 +29,9 @@ class ArtistList extends Component {
   }
 }
 
-export default ArtistList;
+ArtistResultList.propTypes = {
+  artists: PropTypes.arrayOf(PropTypes.object).isRequired,
+  onSelectArtist: PropTypes.func.isRequired,
+}
+
+export default ArtistResultList;
