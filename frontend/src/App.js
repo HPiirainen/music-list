@@ -57,11 +57,10 @@ class App extends Component {
     const readItemsFromListUrl = `${this.getApiBaseUrl()}/api/read-items`;
     Promise.all(lists.map(list => axios.get(`${readItemsFromListUrl}/${list.id}`)))
       .then(axios.spread((...responses) => {
-        const listsWithItems = lists.map((list, index) => {
-          return { ...list, items: responses[index].data };
-        });
-        this.setState({
-          lists: listsWithItems,
+        responses.forEach((response, index) => {
+          this.setState({
+            lists: update(this.state.lists, {[index]: {items: {$set: response.data}}}),
+          });
         });
       }))
       .catch(error => {
@@ -163,21 +162,7 @@ class App extends Component {
     });
   }
 
-  appendItemToList = (item, listId = 1) => {
-    const { lists } = this.state;
-    const listIndex = lists.findIndex(list => list.id === listId);
-    if (listIndex === -1) {
-      return false;
-    }
-    this.setState({
-      lists: update(this.state.lists, {[listIndex]: {items: {$push: [item]}}}),
-    });
-  }
-
-  addActiveToList = (listId = 1) => {
-    if (!this.hasActiveArtist()) {
-      return;
-    }
+  constructItemFromState = () => {
     const {
       activeArtist: {
         id: artistId,
@@ -195,8 +180,8 @@ class App extends Component {
         total_tracks: albumTracksAmount,
       },
     } = this.state || {};
-    const item = {
-      listId,
+
+    return {
       artistId,
       artistName,
       artistUrl,
@@ -209,6 +194,25 @@ class App extends Component {
       albumReleaseDate: albumReleaseDate || null,
       albumTracksAmount: albumTracksAmount || null,
     };
+  }
+
+  appendItemToList = (item, listId = 1) => {
+    const { lists } = this.state;
+    const listIndex = lists.findIndex(list => list.id === listId);
+    if (listIndex === -1) {
+      return false;
+    }
+    this.setState({
+      lists: update(this.state.lists, {[listIndex]: {items: {$push: [item]}}}),
+    });
+  }
+
+  addActiveToList = (listId = 1) => {
+    if (!this.hasActiveArtist()) {
+      return;
+    }
+    const item = this.constructItemFromState();
+    item.listId = listId;
     console.log(item);
     if (this.cancel) {
       this.cancel.cancel();
