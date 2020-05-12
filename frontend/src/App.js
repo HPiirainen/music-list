@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import update from 'immutability-helper';
+import axios from 'axios';
 import {
   Container,
   Box,
 } from '@material-ui/core';
-import axios from 'axios';
 import ArtistInput from './components/ArtistInput';
 import ArtistResultList from './components/ArtistResultList';
 import ActiveArtist from './components/ActiveArtist';
@@ -54,8 +54,8 @@ class App extends Component {
 
   loadListItems = () => {
     const { lists } = this.state;
-    const readItemsFromListUrl = `${this.getApiBaseUrl()}/api/read-items`;
-    axios.get(readItemsFromListUrl)
+    const readAllItemsUrl = `${this.getApiBaseUrl()}/api/read-items`;
+    axios.get(readAllItemsUrl)
       .then(response => {
         const itemsByListId = this.groupBy(response.data, 'listId');
         Object.keys(itemsByListId).forEach(key => {
@@ -79,6 +79,21 @@ class App extends Component {
       acc[key].push(obj);
       return acc;
     }, {});
+  }
+
+  moveItemToList = (item, listId = 2) => {
+    const { itemId} = item;
+    const updateItemUrl = `${this.getApiBaseUrl()}/api/update-item/${itemId}`;
+    axios.put(
+      updateItemUrl,
+      { listId }
+    )
+      .then(response => {
+        console.log(response.data);
+      })
+      .catch(error => {
+        console.log(error);
+      });
   }
 
   readItem = async (id) => {
@@ -320,7 +335,8 @@ class App extends Component {
             onSelectAlbum={this.setAlbum} />
         </Box>
         <MusicListContainer
-          lists={this.state.lists} />
+          lists={this.state.lists}
+          onMoveItem={this.moveItemToList} />
       </Box>
     </Container>
   )

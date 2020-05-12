@@ -58,7 +58,7 @@ class ActiveArtist extends Component {
             color="primary"
             startIcon={<PlaylistAddIcon />}
             onClick={this.handleAdd}>
-              Add to list
+              Add to queue
           </Button>
           <Button
             color="secondary"

@@ -8,9 +8,12 @@ import MusicList from './MusicList';
 class MusicListContainer extends Component {
 
 	render = () => {
-    const { lists } = this.props;
+    const { lists, onMoveItem } = this.props;
     const content = lists.map(list => (
-      <MusicList key={list.id} list={list} />
+      <MusicList
+        key={list.id}
+        list={list}
+        onMoveItem={onMoveItem} />
     ));
     return (
       <Box my={4}>
@@ -22,6 +25,7 @@ class MusicListContainer extends Component {
 
 MusicListContainer.propTypes = {
   lists: PropTypes.arrayOf(PropTypes.object).isRequired,
+  onMoveItem: PropTypes.func,
 }
 
 export default MusicListContainer;

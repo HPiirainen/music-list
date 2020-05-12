@@ -11,12 +11,12 @@ import MusicListItem from './MusicListItem';
 class MusicList extends Component {
 
 	render = () => {
-    const { list } = this.props;
+    const { list, onMoveItem } = this.props;
     let content = '';
     if (list.items.length) {
       const items = list.items.map(item => (
         <React.Fragment key={item.artistId}>
-          <MusicListItem item={item} />
+          <MusicListItem item={item} onMoveItem={onMoveItem} />
           <Divider component="li" />
         </React.Fragment>
       ));
@@ -33,6 +33,7 @@ class MusicList extends Component {
 
 MusicList.propTypes = {
   list: PropTypes.object,
+  onMoveItem: PropTypes.func,
 }
 
 export default MusicList;
