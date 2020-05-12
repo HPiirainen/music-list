@@ -15,6 +15,7 @@ admin.initializeApp({
 
 // Database initialization
 const db = admin.firestore();
+const FieldValue = admin.firestore.FieldValue;
 
 // Spotify initialization
 const spotifyApi = new SpotifyWebApi({
@@ -90,7 +91,8 @@ app.post('/api/create-item', (req, res) => {
 			if (item.albumId) {
 				itemId += item.albumId;
 			}
-			item.createdAt = admin.firestore.Timestamp.fromDate(new Date());
+			item.createdAt = FieldValue.serverTimestamp();
+			item.lastUpdatedAt = FieldValue.serverTimestamp();
 			await db
 				.collection('items')
 				.doc(itemId)
@@ -112,7 +114,7 @@ app.get('/api/read-items', (req, res) => {
 			await query.get().then(snapshot => {
 				const docs = snapshot.docs;
 				docs.forEach(doc => {
-					response.push(doc.data());
+					response.push({ ...doc.data(), itemId: doc.id });
 				});
 			});
 			return res.status(200).send(response);
@@ -171,9 +173,9 @@ app.put('/api/update-item/:item_id', (req, res) => {
 			const document = db
 				.collection('items')
 				.doc(req.params.item_id);
-			await document.update({
-				item: req.body.item
-			});
+			const values = req.body;
+			values.lastUpdatedAt = FieldValue.serverTimestamp();
+			await document.update(values);
 			return res.status(200).send();
 		} catch (error) {
 			console.log(error);
