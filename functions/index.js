@@ -112,10 +112,7 @@ app.get('/api/read-items', (req, res) => {
 			await query.get().then(snapshot => {
 				const docs = snapshot.docs;
 				docs.forEach(doc => {
-					response.push({
-						id: doc.id,
-						item: doc.data().item,
-					});
+					response.push(doc.data());
 				});
 			});
 			return res.status(200).send(response);
