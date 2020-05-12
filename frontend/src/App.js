@@ -55,17 +55,30 @@ class App extends Component {
   loadListItems = () => {
     const { lists } = this.state;
     const readItemsFromListUrl = `${this.getApiBaseUrl()}/api/read-items`;
-    Promise.all(lists.map(list => axios.get(`${readItemsFromListUrl}/${list.id}`)))
-      .then(axios.spread((...responses) => {
-        responses.forEach((response, index) => {
+    axios.get(readItemsFromListUrl)
+      .then(response => {
+        const itemsByListId = this.groupBy(response.data, 'listId');
+        Object.keys(itemsByListId).forEach(key => {
+          const listIndex = lists.findIndex(list => list.id === parseInt(key));
           this.setState({
-            lists: update(this.state.lists, {[index]: {items: {$set: response.data}}}),
+            lists: update(this.state.lists, {[listIndex]: {items: {$set: itemsByListId[key]}}}),
           });
         });
-      }))
+      })
       .catch(error => {
         console.log(error);
       });
+  }
+
+  groupBy = (arr, property) => {
+    return arr.reduce((acc, obj) => {
+      const key = obj[property];
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(obj);
+      return acc;
+    }, {});
   }
 
   readItem = async (id) => {
