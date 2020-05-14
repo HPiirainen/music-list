@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
 import {
 	Autocomplete,
 } from '@material-ui/lab';
@@ -10,10 +9,6 @@ import {
 } from '@material-ui/core';
 import AlbumIcon from '@material-ui/icons/Album';
 import AvatarImage from './AvatarImage';
-
-const styles = theme => ({
-  
-});
 
 class AlbumInput extends Component {
 
@@ -63,4 +58,4 @@ AlbumInput.propTypes = {
   showInput: PropTypes.bool,
 }
 
-export default withStyles(styles)(AlbumInput);
+export default AlbumInput;

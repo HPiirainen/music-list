@@ -1,15 +1,19 @@
 import React, { Component } from 'react';
+import { groupBy } from 'lodash';
 import update from 'immutability-helper';
 import axios from 'axios';
 import {
   Container,
   Box,
+  List,
+  Divider,
+  Typography,
 } from '@material-ui/core';
 import ArtistInput from './components/ArtistInput';
-import ArtistResultList from './components/ArtistResultList';
+import ArtistResultListItem from './components/ArtistResultListItem';
 import ActiveArtist from './components/ActiveArtist';
 import AlbumInput from './components/AlbumInput';
-import MusicListContainer from './components/MusicListContainer';
+import MusicList from './components/MusicList';
 import './App.css';
 
 class App extends Component {
@@ -54,45 +58,61 @@ class App extends Component {
 
   loadListItems = () => {
     const { lists } = this.state;
+    this.setState({ loading: true });
     const readAllItemsUrl = `${this.getApiBaseUrl()}/api/read-items`;
     axios.get(readAllItemsUrl)
       .then(response => {
-        const itemsByListId = this.groupBy(response.data, 'listId');
-        Object.keys(itemsByListId).forEach(key => {
-          const listIndex = lists.findIndex(list => list.id === parseInt(key));
-          this.setState({
-            lists: update(this.state.lists, {[listIndex]: {items: {$set: itemsByListId[key]}}}),
-          });
+        const itemsByListId = groupBy(response.data, 'listId');
+        lists.forEach((list, key) => {
+          const listIndex = Object.keys(itemsByListId).findIndex(id => parseInt(id) === list.id);
+          if (listIndex >= 0) {
+            this.setState({
+              lists: update(this.state.lists, { [key]: { items: { $set: itemsByListId[list.id] } } }),
+            });
+          } else {
+            this.setState({
+              lists: update(this.state.lists, { [key]: { items: { $set: {} } } }),
+            });
+          }
         });
+        this.setState({ loading: false });
       })
       .catch(error => {
         console.log(error);
+        this.setState({ loading: false });
       });
   }
 
-  groupBy = (arr, property) => {
-    return arr.reduce((acc, obj) => {
-      const key = obj[property];
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(obj);
-      return acc;
-    }, {});
+  deleteItem = (item) => {
+    const { itemId } = item;
+    const deleteItemUrl = `${this.getApiBaseUrl()}/api/delete-item/${itemId}`;
+    this.setState({ loading: true });
+    axios.delete(
+      deleteItemUrl
+    )
+      .then(response => {
+        this.loadListItems();
+      })
+      .catch(error => {
+        console.log(error);
+        this.setState({ loading: false });
+      });
   }
 
   moveItemToList = (item, listId = 2) => {
-    const { itemId} = item;
+    const { itemId } = item;
     const updateItemUrl = `${this.getApiBaseUrl()}/api/update-item/${itemId}`;
+    this.setState({ loading: true });
     axios.put(
       updateItemUrl,
       { listId }
     )
       .then(response => {
-        console.log(response.data);
+        this.loadListItems();
       })
       .catch(error => {
         console.log(error);
+        this.setState({ loading: false });
       });
   }
 
@@ -111,6 +131,7 @@ class App extends Component {
   }
 
   fetchArtists = (query) => {
+    console.log('actually fetching');
     if (this.cancel) {
       this.cancel.cancel();
     }
@@ -146,7 +167,6 @@ class App extends Component {
       this.cancel.cancel();
     }
     this.cancel = axios.CancelToken.source();
-    this.setState({ loading: true });
     const albumSearchUrl = `${this.getApiBaseUrl()}/spotify/get-artist-albums/${activeArtist.id}`;
     axios
       .get(
@@ -157,14 +177,12 @@ class App extends Component {
         console.log(response.data);
         this.setState({
           albums: response.data,
-          loading: false,
           message: '',
         })
       })
       .catch(error => {
         if (axios.isCancel(error) || error) {
           this.setState({
-            loading: false,
             message: 'Failed to fetch results. Please try again.',
           });
         }
@@ -259,16 +277,13 @@ class App extends Component {
           loading: false,
           activeArtist: {},
           activeAlbum: {},
+        }, () => {
+          this.loadListItems();
         });
-        console.log(response);
-        return response.data;
       })
-      .then(itemId => {
-        return this.readItem(itemId);
-      })
-      .then(item => {
-        this.appendItemToList(item, 1);
-      })
+      // .then(item => {
+      //   this.appendItemToList(item, 1);
+      // })
       .catch(error => {
         if (axios.isCancel(error) || error) {
           console.log(error);
@@ -314,32 +329,51 @@ class App extends Component {
     }
   }
 
-  render = () => (
-    <Container maxWidth="sm" className="app">
-      <Box my={4}>
-        <ArtistInput
-          ref={this.artistInput}
-          showInput={this.isArtistInputVisible()}
-          onInputChange={this.fetchArtists} />
-        <ArtistResultList
-          artists={this.state.artistResults}
-          onSelectArtist={this.setArtist} />
-        <ActiveArtist
-          artist={this.state.activeArtist}
-          onDismiss={this.clearActiveArtist}
-          onAdd={this.addActiveToList} />
-        <Box my={2}>
-          <AlbumInput
-            albums={this.state.albums}
-            showInput={this.isAlbumInputVisible()}
-            onSelectAlbum={this.setAlbum} />
+  render = () => {
+    const { artistResults, activeArtist, albums, lists, loading } = this.state;
+    if (loading) {
+      return (
+        <Container maxWidth="sm" className="app">
+          <Typography variant="h3">Loading...</Typography>
+        </Container>
+      )
+    }
+    const listContent = lists.map(list => (
+      <MusicList key={list.id} list={list} onMoveItem={this.moveItemToList} onDeleteItem={this.deleteItem} />
+    ));
+    let artistContent = '';
+    if (artistResults.length) {
+      const artistElements = artistResults.map(artist => (
+        <React.Fragment key={artist.id}>
+          <ArtistResultListItem key={artist.id} artist={artist} onSelectArtist={this.setArtist} />
+          <Divider component="li" />
+        </React.Fragment>
+      ));
+      artistContent = <List>{artistElements}</List>;
+    }
+    return (
+      <Container maxWidth="sm" className="app">
+        <Box my={4}>
+          <ArtistInput
+            ref={this.artistInput}
+            showInput={this.isArtistInputVisible()}
+            onInputChange={this.fetchArtists} />
+          {artistContent}
+          <ActiveArtist
+            artist={activeArtist}
+            onDismiss={this.clearActiveArtist}
+            onAdd={this.addActiveToList} />
+          <Box my={2}>
+            <AlbumInput
+              albums={albums}
+              showInput={this.isAlbumInputVisible()}
+              onSelectAlbum={this.setAlbum} />
+          </Box>
+          { listContent }
         </Box>
-        <MusicListContainer
-          lists={this.state.lists}
-          onMoveItem={this.moveItemToList} />
-      </Box>
-    </Container>
-  )
+      </Container>
+    )
+  }
 }
 
 export default App;

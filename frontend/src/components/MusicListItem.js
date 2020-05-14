@@ -1,37 +1,42 @@
 import React, { Component } from 'react';
+import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import {
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
-  Menu,
-  MenuItem,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  ExpansionPanelActions,
+  Divider,
+  Chip,
+  Button,
+  Typography,
 } from '@material-ui/core';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
 import MusicNoteIcon from '@material-ui/icons/MusicNote';
 import AlbumIcon from '@material-ui/icons/Album';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import DeleteIcon from '@material-ui/icons/Delete';
+import AccessTimeIcon from '@material-ui/icons/AccessTime';
+import CheckIcon from '@material-ui/icons/Check';
+import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd';
 import AvatarImage from './AvatarImage';
 
+const styles = theme => ({
+  centered: {
+    display: 'flex',
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  insetRight: {
+    marginRight: theme.spacing(4.5),
+  }
+});
+
 class MusicListItem extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-    };
-  }
 
-  handleContextMenuClick = (e) => {
-    this.setState({
-      anchorEl: e.currentTarget,
-    });
-  }
-
-  handleContextMenuClose = () => {
-    this.setState({
-      anchorEl: null,
-    });
+  handleDeleteItem = () => {
+    const { item, onDeleteItem } = this.props;
+    onDeleteItem(item);
   }
 
   handleMoveToQueue = () => {
@@ -59,81 +64,79 @@ class MusicListItem extends Component {
   }
 
 	render = () => {
-    const { item } = this.props;
-    const { anchorEl } = this.state;
-    let title = item.artistName;
-    let images = item.artistImages;
-    let fallbackIcon = <MusicNoteIcon style={{ fontSize: 42 }} />;
-    let secondaryText = '';
+    const { item, classes } = this.props;
+    let album = '';
+    let itemType = <Chip variant="outlined" size="small" color="primary" icon={<MusicNoteIcon />} label="Artist" />;
     if (this.hasAlbum()) {
-      title += ' – ' + item.albumName;
-      images = item.albumImages;
-      fallbackIcon = <AlbumIcon style={{ fontSize: 42 }} />;
-      secondaryText = <small>{this.getYear(item.albumReleaseDate)} | {item.albumTracksAmount} tracks</small>;
+      album = (
+        <React.Fragment>
+          <AvatarImage
+            images={item.albumImages}
+            alt={item.albumName}
+            imageSize="medium"
+            fallback={<AlbumIcon style={{ fontSize: 42 }} />} />
+          <Typography variant="subtitle1">{ item.albumName } <small>({this.getYear(item.albumReleaseDate)})</small></Typography>
+          <Typography variant="subtitle2">{ item.albumTracksAmount } tracks</Typography>
+        </React.Fragment>
+      );
+      itemType = <Chip variant="outlined" size="small" color="primary" icon={<AlbumIcon />} label="Album" />;
     }
-    let contextMenuItems;
+    const DeleteButton = <Button key="delete" startIcon={<DeleteIcon />} color="secondary" onClick={this.handleDeleteItem}>Remove</Button>
+    const HistoryButton = <Button key="history" startIcon={<CheckIcon />} color="primary" onClick={this.handleMoveToHistory}>To listened</Button>;
+    const LongTermButton = <Button key="longterm" startIcon={<AccessTimeIcon />} color="primary" onClick={this.handleMoveToLongTerm}>To long-term</Button>;
+    const QueueButton = <Button key="queue" startIcon={<PlaylistAddIcon />} color="primary" onClick={this.handleMoveToQueue}>To queue</Button>;
+    let itemActions = [DeleteButton];
     switch(item.listId) {
       case 1: // queue
-        contextMenuItems = (
-          [
-            <MenuItem key="history" onClick={this.handleMoveToHistory}>To listened</MenuItem>,
-            <MenuItem key="longterm" onClick={this.handleMoveToLongTerm}>To long-term</MenuItem>,
-          ]
+        itemActions = (
+          [...itemActions, HistoryButton, LongTermButton]
         );
         break;
       case 2: // listened
-        contextMenuItems = (
-          [
-            <MenuItem key="queue" onClick={this.handleMoveToQueue}>To queue</MenuItem>,
-            <MenuItem key="longterm" onClick={this.handleMoveToLongTerm}>To long-term</MenuItem>,
-          ]
+        itemActions = (
+          [...itemActions, QueueButton, LongTermButton]
         )
         break;
       case 3: // long-term
-        contextMenuItems = (
-          [
-            <MenuItem key="queue" onClick={this.handleMoveToQueue}>To queue</MenuItem>,
-            <MenuItem key="history" onClick={this.handleMoveToHistory}>To listened</MenuItem>,
-          ]
+        itemActions = (
+          [...itemActions, QueueButton, HistoryButton]
         )
         break;
+      default:
+        itemActions = '';
     }
     return (
-      <ListItem>
-        <ListItemAvatar>
-          <AvatarImage
-            images={images}
-            alt={item.artistName}
-            imageSize="medium"
-            fallback={fallbackIcon} />
-        </ListItemAvatar>
-        <ListItemText
-          primary={title}
-          secondary={secondaryText} />
-        <ListItemSecondaryAction>
-          <IconButton
-            aria-haspopup="true"
-            aria-label="Actions"
-            onClick={this.handleContextMenuClick}>
-            <MoreVertIcon />
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={this.handleContextMenuClose}
-          >
-            { contextMenuItems }
-          </Menu>
-        </ListItemSecondaryAction>
-      </ListItem>
+        <ExpansionPanel TransitionProps={{ unmountOnExit: true }}>
+          <ExpansionPanelSummary
+            expandIcon={<ExpandMoreIcon />}>
+            <div className={classes.centered}>
+              <AvatarImage
+                images={item.artistImages}
+                alt={item.artistName}
+                imageSize="medium"
+                fallback={<MusicNoteIcon style={{ fontSize: 42 }} />} />
+              <Typography variant="h5">{ item.artistName }</Typography>
+              { itemType }
+            </div>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <div className={`${classes.centered} ${classes.insetRight}`}>
+              { album }
+            </div>
+          </ExpansionPanelDetails>
+          <Divider />
+          <ExpansionPanelActions>
+            { itemActions }
+          </ExpansionPanelActions>
+        </ExpansionPanel>
     )
   }
 }
 
 MusicListItem.propTypes = {
   item: PropTypes.object,
+  handleDeleteItem: PropTypes.func,
   onMoveItem: PropTypes.func,
 }
 
-export default MusicListItem;
+export default withStyles(styles)(MusicListItem);

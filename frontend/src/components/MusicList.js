@@ -2,25 +2,18 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {
   Box,
-  List,
-  Divider,
   Typography,
 } from '@material-ui/core';
 import MusicListItem from './MusicListItem';
 
 class MusicList extends Component {
-
 	render = () => {
-    const { list, onMoveItem } = this.props;
+    const { list, onMoveItem, onDeleteItem } = this.props;
     let content = '';
     if (list.items.length) {
-      const items = list.items.map(item => (
-        <React.Fragment key={item.artistId}>
-          <MusicListItem item={item} onMoveItem={onMoveItem} />
-          <Divider component="li" />
-        </React.Fragment>
+      content = list.items.map(item => (
+        <MusicListItem key={item.itemId} item={item} onMoveItem={onMoveItem} onDeleteItem={onDeleteItem} />
       ));
-      content = <List>{ items }</List>
     }
     return (
       <Box my={2}>

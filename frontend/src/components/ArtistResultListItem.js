@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
 import {
   ListItem,
   ListItemAvatar,
@@ -9,13 +8,6 @@ import {
 import MusicNoteIcon from '@material-ui/icons/MusicNote';
 import AvatarImage from './AvatarImage';
 import GenreList from './GenreList';
-
-const styles = theme => ({
-  largeImage: {
-    width: theme.spacing(25),
-    height: theme.spacing(25),
-  },
-});
 
 class ArtistResultListItem extends Component {
 
@@ -51,4 +43,4 @@ ArtistResultListItem.propTypes = {
   onSelectArtist: PropTypes.func.isRequired,
 }
 
-export default withStyles(styles)(ArtistResultListItem);
+export default ArtistResultListItem;

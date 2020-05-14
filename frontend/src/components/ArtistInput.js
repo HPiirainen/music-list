@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { debounce } from 'lodash';
 import PropTypes from 'prop-types';
 import {
 	TextField,
@@ -19,13 +20,19 @@ class ArtistInput extends Component {
   }
   
   handleInputChange = (e) => {
+    // Tell React not to nullify event
+    e.persist();
     const { onInputChange } = this.props;
-    const query = e.target.value;
     this.setState({
-      query,
-    }, () => {
-      onInputChange(query);
+      query: e.target.value,
     });
+    // Debounce sending input change to root component
+    if (!this.debounceFn) {
+      this.debounceFn = debounce(() => {
+        onInputChange(e.target.value);
+      }, 400);
+    }
+    this.debounceFn();
   }
 
 	render = () => {
