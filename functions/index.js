@@ -109,7 +109,7 @@ app.post('/api/create-item', (req, res) => {
 app.get('/api/read-items', (req, res) => {
 	(async () => {
 		try {
-			const query = db.collection('items');
+			const query = db.collection('items').orderBy('createdAt');
 			const response = [];
 			await query.get().then(snapshot => {
 				const docs = snapshot.docs;
