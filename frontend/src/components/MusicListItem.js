@@ -10,6 +10,8 @@ import {
   Chip,
   Button,
   Typography,
+  Tooltip,
+  Zoom,
 } from '@material-ui/core';
 import MusicNoteIcon from '@material-ui/icons/MusicNote';
 import AlbumIcon from '@material-ui/icons/Album';
@@ -63,9 +65,19 @@ class MusicListItem extends Component {
     return new Date(dateString).getFullYear();
   }
 
+  getDateFromSeconds = (seconds) => {
+    return new Date(seconds * 1000).toLocaleString();
+  }
+
 	render = () => {
     const { item, classes } = this.props;
     let album = '';
+    const tooltipText = (
+      <React.Fragment>
+        Created: {this.getDateFromSeconds(item.createdAt._seconds)}<br />
+        Last updated: {this.getDateFromSeconds(item.lastUpdatedAt._seconds)}
+      </React.Fragment>
+    )
     let itemType = <Chip variant="outlined" size="small" color="primary" icon={<MusicNoteIcon />} label="Artist" />;
     if (this.hasAlbum()) {
       album = (
@@ -81,6 +93,11 @@ class MusicListItem extends Component {
       );
       itemType = <Chip variant="outlined" size="small" color="primary" icon={<AlbumIcon />} label="Album" />;
     }
+    itemType = (
+      <Tooltip title={tooltipText} TransitionComponent={Zoom} arrow>
+        { itemType }
+      </Tooltip>
+    );
     const DeleteButton = <Button key="delete" startIcon={<DeleteIcon />} color="secondary" onClick={this.handleDeleteItem}>Remove</Button>
     const HistoryButton = <Button key="history" startIcon={<CheckIcon />} color="primary" onClick={this.handleMoveToHistory}>To listened</Button>;
     const LongTermButton = <Button key="longterm" startIcon={<AccessTimeIcon />} color="primary" onClick={this.handleMoveToLongTerm}>To long-term</Button>;
