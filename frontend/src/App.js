@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import { groupBy } from 'lodash';
 import update from 'immutability-helper';
 import axios from 'axios';
+import { withStyles } from '@material-ui/core/styles';
 import {
   Container,
   Box,
   List,
   Divider,
-  Typography,
+  Backdrop,
+  CircularProgress,
 } from '@material-ui/core';
 import ArtistInput from './components/ArtistInput';
 import ArtistResultListItem from './components/ArtistResultListItem';
@@ -15,6 +17,13 @@ import ActiveArtist from './components/ActiveArtist';
 import AlbumInput from './components/AlbumInput';
 import MusicList from './components/MusicList';
 import './App.css';
+
+const styles = theme => ({
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff',
+  },
+});
 
 class App extends Component {
   constructor(props) {
@@ -331,13 +340,7 @@ class App extends Component {
 
   render = () => {
     const { artistResults, activeArtist, albums, lists, loading } = this.state;
-    if (loading) {
-      return (
-        <Container maxWidth="sm" className="app">
-          <Typography variant="h3">Loading...</Typography>
-        </Container>
-      )
-    }
+    const { classes } = this.props;
     const listContent = lists.map(list => (
       <MusicList key={list.id} list={list} onMoveItem={this.moveItemToList} onDeleteItem={this.deleteItem} />
     ));
@@ -353,6 +356,9 @@ class App extends Component {
     }
     return (
       <Container maxWidth="sm" className="app">
+        <Backdrop className={classes.backdrop} open={loading}>
+          <CircularProgress color="inherit" disableShrink />
+        </Backdrop>
         <Box my={4}>
           <ArtistInput
             ref={this.artistInput}
@@ -376,4 +382,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default withStyles(styles)(App);
