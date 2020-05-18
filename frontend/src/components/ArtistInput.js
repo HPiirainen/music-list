@@ -18,18 +18,16 @@ class ArtistInput extends Component {
       query: '',
     });
   }
-  
-  handleInputChange = (e) => {
-    // Tell React not to nullify event
-    e.persist();
+
+  debounceInputChange = value => {
     const { onInputChange } = this.props;
     this.setState({
-      query: e.target.value,
+      query: value,
     });
-    // Debounce sending input change to root component
     if (!this.debounceFn) {
       this.debounceFn = debounce(() => {
-        onInputChange(e.target.value);
+        onInputChange(this.state.query);
+        console.log(this.state.query);
       }, 400);
     }
     this.debounceFn();
@@ -47,7 +45,7 @@ class ArtistInput extends Component {
         variant="outlined"
         fullWidth
         value={this.state.query}
-        onChange={this.handleInputChange}
+        onChange={({target: {value}}) => this.debounceInputChange(value)}
       />
     )
 	}
