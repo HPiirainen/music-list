@@ -20,11 +20,11 @@ const styles = theme => ({
 
 class MusicList extends Component {
 	render = () => {
-    const { list, onMoveItem, onDeleteItem, classes } = this.props;
+    const { list, listActions, onMoveItem, onDeleteItem, classes } = this.props;
     let content = '';
     if (list.items.length) {
       content = list.items.map(item => (
-        <MusicListItem className={classes.list} key={item.itemId} item={item} onMoveItem={onMoveItem} onDeleteItem={onDeleteItem} />
+        <MusicListItem className={classes.list} key={item.itemId} item={item} listActions={listActions} onMoveItem={onMoveItem} onDeleteItem={onDeleteItem} />
       ));
     }
     return (
@@ -38,6 +38,7 @@ class MusicList extends Component {
 
 MusicList.propTypes = {
   list: PropTypes.object,
+  listActions: PropTypes.array,
   onMoveItem: PropTypes.func,
 }
 

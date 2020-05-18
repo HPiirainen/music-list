@@ -29,23 +29,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      lists: [
-        {
-          id: 1,
-          title: 'Queue',
-          items: {},
-        },
-        {
-          id: 2,
-          title: 'History',
-          items: {},
-        },
-        {
-          id: 3,
-          title: 'Long-term',
-          items: {},
-        }
-      ],
+      lists: [],
       activeArtist: {},
       artistResults: [],
       activeAlbum: {},
@@ -66,30 +50,30 @@ class App extends Component {
   }
 
   loadListItems = () => {
-    const { lists } = this.state;
     this.setState({ loading: true });
+    const readAllListsUrl = `${this.getApiBaseUrl()}/api/read-lists`;
     const readAllItemsUrl = `${this.getApiBaseUrl()}/api/read-items`;
-    axios.get(readAllItemsUrl)
-      .then(response => {
-        const itemsByListId = groupBy(response.data, 'listId');
-        lists.forEach((list, key) => {
-          const listIndex = Object.keys(itemsByListId).findIndex(id => parseInt(id) === list.id);
-          if (listIndex >= 0) {
-            this.setState({
-              lists: update(this.state.lists, { [key]: { items: { $set: itemsByListId[list.id] } } }),
-            });
-          } else {
-            this.setState({
-              lists: update(this.state.lists, { [key]: { items: { $set: {} } } }),
-            });
-          }
+    Promise.all([axios.get(readAllListsUrl), axios.get(readAllItemsUrl)])
+      .then(axios.spread((...responses) => {
+        const items = responses[1].data;
+        const lists = responses[0].data.map(list => {
+          const listItems = items.filter(item => item.listId === list.id);
+          return { ...list, items: listItems };
         });
-        this.setState({ loading: false });
-      })
+        this.setState({
+          lists,
+          loading: false
+        });
+      }))
       .catch(error => {
         console.log(error);
         this.setState({ loading: false });
       });
+  }
+
+  getDefaultListId = () => {
+    const { lists } = this.state;
+    return lists.find(list => list.isDefault).id;
   }
 
   deleteItem = (item) => {
@@ -140,7 +124,6 @@ class App extends Component {
   }
 
   fetchArtists = (query) => {
-    console.log('actually fetching');
     if (this.cancel) {
       this.cancel.cancel();
     }
@@ -213,7 +196,7 @@ class App extends Component {
       activeAlbum: album,
       albums: [],
     }, () => {
-      this.addActiveToList();
+      this.addActiveToList(this.getDefaultListId());
     });
   }
 
@@ -251,23 +234,12 @@ class App extends Component {
     };
   }
 
-  appendItemToList = (item, listId = 1) => {
-    const { lists } = this.state;
-    const listIndex = lists.findIndex(list => list.id === listId);
-    if (listIndex === -1) {
-      return false;
-    }
-    this.setState({
-      lists: update(this.state.lists, {[listIndex]: {items: {$push: [item]}}}),
-    });
-  }
-
-  addActiveToList = (listId = 1) => {
+  addActiveToList = (listId = null) => {
     if (!this.hasActiveArtist()) {
       return;
     }
     const item = this.constructItemFromState();
-    item.listId = listId;
+    item.listId = listId || this.getDefaultListId();
     console.log(item);
     if (this.cancel) {
       this.cancel.cancel();
@@ -290,9 +262,6 @@ class App extends Component {
           this.loadListItems();
         });
       })
-      // .then(item => {
-      //   this.appendItemToList(item, 1);
-      // })
       .catch(error => {
         if (axios.isCancel(error) || error) {
           console.log(error);
@@ -341,9 +310,10 @@ class App extends Component {
   render = () => {
     const { artistResults, activeArtist, albums, lists, loading } = this.state;
     const { classes } = this.props;
-    const listContent = lists.map(list => (
-      <MusicList key={list.id} list={list} onMoveItem={this.moveItemToList} onDeleteItem={this.deleteItem} />
-    ));
+    const listContent = lists.map(list => {
+      const listActions = lists.filter(l => l.id !== list.id);
+      return (<MusicList key={list.id} list={list} listActions={listActions} onMoveItem={this.moveItemToList} onDeleteItem={this.deleteItem} />)
+    });
     let artistContent = '';
     if (artistResults.length) {
       const artistElements = artistResults.map(artist => (
