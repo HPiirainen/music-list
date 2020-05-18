@@ -82,6 +82,95 @@ app.get('/spotify/get-artist-albums/:artist_id', (req, res) => {
 	})();
 });
 
+app.post('/api/create-list', (req, res) => {
+	(async () => {
+		try {
+			const list = req.body;
+			list.createdAt = FieldValue.serverTimestamp();
+			list.lastUpdatedAt = FieldValue.serverTimestamp();
+			await db
+				.collection('lists')
+				.doc(list.id)
+				.create(list);
+			return res.status(200).send();
+		} catch (error) {
+			console.log(error);
+			return res.status(500).send(error);
+		}
+	})();
+});
+
+app.get('/api/read-lists', (req, res) => {
+	(async () => {
+		try {
+			const query = db.collection('lists').orderBy('fixed', 'desc').orderBy('createdAt');
+			const response = [];
+			await query.get().then(snapshot => {
+				const docs = snapshot.docs;
+				docs.forEach(doc => {
+					response.push(doc.data());
+				});
+			});
+			return res.status(200).send(response);
+		} catch (error) {
+			console.log(error);
+			return res.status(500).send(error);
+		}
+	})();
+});
+
+app.get('/api/read-list/:list_id', (req, res) => {
+	(async () => {
+		try {
+			const query = db.collection('lists').doc(req.params.list_id);
+			let response = null;
+			await query.get().then(doc => {
+				if (doc.exists) {
+					return res.status(404).send();
+				}
+				response = doc.data();
+			});
+			return res.status(200).send(response);
+		} catch (error) {
+			console.log(error);
+			return res.status(500).send(error);
+		}
+	})();
+});
+
+app.put('/api/update-list/:list_id', (req, res) => {
+	(async () => {
+		try {
+			const doc = db
+				.collection('lists')
+				.doc(req.params.list_id);
+			const values = req.body;
+			values.lastUpdatedAt = FieldValue.serverTimestamp();
+			await doc.update(values);
+			return res.status(200).send();
+		} catch (error) {
+			console.log(error);
+			return res.status(500).send(error);
+		}
+	})();
+});
+
+app.delete('/api/delete-list/:list_id', (req, res) => {
+	(async () => {
+		try {
+			const doc = db
+				.collection('lists')
+				.doc(req.params.list_id);
+			console.log(doc);
+			await doc.delete();
+			return res.status(200).send();
+		} catch (error) {
+			console.log(error);
+			return res.status(500).send(error);
+		}
+	})();
+});
+
 // Create
 app.post('/api/create-item', (req, res) => {
 	(async () => {
@@ -154,11 +243,12 @@ app.get('/api/read-item/:item_id', (req, res) => {
 			const query = db.collection('items').doc(req.params.item_id);
 			let response = null;
 			await query.get().then(doc => {
-				if (doc.exists) {
-					response = doc.data();
+				if (!doc.exists) {
+					return res.status(404).send();
 				}
+				response = doc.data();
 			});
-			return response ? res.status(200).send(response) : res.status(404).send();
+			return res.status(200).send(response);
 		} catch (error) {
 			console.log(error);
 			return res.status(500).send(error);
