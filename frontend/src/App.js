@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import { groupBy } from 'lodash';
-import update from 'immutability-helper';
 import axios from 'axios';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -73,7 +71,8 @@ class App extends Component {
 
   getDefaultListId = () => {
     const { lists } = this.state;
-    return lists.find(list => list.isDefault).id;
+    const defaultList = lists.find(list => list.isDefault);
+    return defaultList ? defaultList.id : null;
   }
 
   deleteItem = (item) => {

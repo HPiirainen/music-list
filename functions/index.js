@@ -59,6 +59,7 @@ app.get('/spotify/search-artist/:q', (req, res) => {
 });
 
 app.get('/spotify/get-artist-albums/:artist_id', (req, res) => {
+	// TODO: only fetch albums available in FIN
 	(async () => {
 		const searchParams = {album_type: 'album'};
 		try {
