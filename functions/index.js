@@ -105,12 +105,9 @@ app.get('/api/read-lists', (req, res) => {
 	(async () => {
 		try {
 			const query = db.collection('lists').orderBy('fixed', 'desc').orderBy('createdAt');
-			const response = [];
-			await query.get().then(snapshot => {
+			const response = await query.get().then(snapshot => {
 				const docs = snapshot.docs;
-				docs.forEach(doc => {
-					response.push(doc.data());
-				});
+				return docs.map(doc => doc.data());
 			});
 			return res.status(200).send(response);
 		} catch (error) {
@@ -124,14 +121,15 @@ app.get('/api/read-list/:list_id', (req, res) => {
 	(async () => {
 		try {
 			const query = db.collection('lists').doc(req.params.list_id);
-			let response = null;
-			await query.get().then(doc => {
-				if (doc.exists) {
-					return res.status(404).send();
+			let statusCode = 200;
+			const response = await query.get().then(doc => {
+				if (!doc.exists) {
+					statusCode = 404;
+					return false;
 				}
-				response = doc.data();
+				return doc.data();
 			});
-			return res.status(200).send(response);
+			return res.status(statusCode).send(response);
 		} catch (error) {
 			console.log(error);
 			return res.status(500).send(error);
@@ -200,12 +198,9 @@ app.get('/api/read-items', (req, res) => {
 	(async () => {
 		try {
 			const query = db.collection('items').orderBy('createdAt');
-			const response = [];
-			await query.get().then(snapshot => {
+			const response = await query.get().then(snapshot => {
 				const docs = snapshot.docs;
-				docs.forEach(doc => {
-					response.push({ ...doc.data(), itemId: doc.id });
-				});
+				return docs.map(doc => Object.assign({}, doc.data(), { itemId: doc.id }));
 			});
 			return res.status(200).send(response);
 		} catch (error) {
@@ -223,11 +218,8 @@ app.get('/api/read-items/:list_id', (req, res) => {
                 .collection('items')
 				.where('listId', '==', parseInt(req.params.list_id))
 				.orderBy('createdAt');
-            const response = [];
-            await query.get().then(snapshot => {
-                snapshot.forEach(doc => {
-                    response.push(doc.data());
-                });
+			const response = await query.get().then(snapshot => {
+				return snapshot.map(doc => doc.data());
             });
             return res.status(200).send(response);
         } catch (error) {
@@ -242,14 +234,15 @@ app.get('/api/read-item/:item_id', (req, res) => {
 	(async () => {
 		try {
 			const query = db.collection('items').doc(req.params.item_id);
-			let response = null;
-			await query.get().then(doc => {
+			let statusCode = 200;
+			const response = await query.get().then(doc => {
 				if (!doc.exists) {
-					return res.status(404).send();
+					statusCode = 404;
+					return false;
 				}
-				response = doc.data();
+				return doc.data();
 			});
-			return res.status(200).send(response);
+			return res.status(statusCode).send(response);
 		} catch (error) {
 			console.log(error);
 			return res.status(500).send(error);
