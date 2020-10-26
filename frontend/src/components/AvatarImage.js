@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -17,18 +17,15 @@ const styles = theme => ({
   },
 });
 
-class AvatarImage extends Component {
+const AvatarImage = props => {
+  const { images, alt, fallback, maxWidth, imageSize, classes } = props;
 
-	render = () => {
-    const { images, alt, fallback, maxWidth, imageSize, classes } = this.props;
-    const image = images.find(image => image.width <= maxWidth);
-    if (!image) {
-      return <Avatar className={classes[imageSize]}>{ fallback }</Avatar>;
-    }
-    return (
-      <Avatar alt={alt} src={image.url} className={classes[imageSize]} />
-    )
+  const image = images.find(image => image.width <= maxWidth);
+
+  if (!image) {
+    return <Avatar className={classes[imageSize]}>{ fallback }</Avatar>;
   }
+  return <Avatar alt={alt} src={image.url} className={classes[imageSize]} />;
 }
 
 AvatarImage.defaultProps = {

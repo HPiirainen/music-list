@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -23,200 +23,164 @@ const styles = theme => ({
   },
 });
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      lists: [],
-      activeArtist: {},
-      artistResults: [],
-      activeAlbum: {},
-      albums: [],
-      loading: false,
-      message: '',
-    };
-    this.cancel = '';
-    this.artistInput = React.createRef();
-  }
+const App = props => {
+  const { classes } = props;
+  const [lists, setLists] = useState([]);
+  const [activeArtist, setActiveArtist] = useState({});
+  const [artistResults, setArtistResults] = useState([]);
+  const [activeAlbum, setActiveAlbum] = useState({});
+  const [albums, setAlbums] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
-  componentDidMount = () => {
-    this.loadListItems();
-  }
+  const apiBaseUrl = 'http://localhost:5001/music-app-a2bd9/us-central1/app';
 
-  getApiBaseUrl = () => {
-    return 'http://localhost:5001/music-app-a2bd9/us-central1/app';
-  }
+  useEffect(() => {
+    loadListItems();
+  }, []);
 
-  loadListItems = () => {
-    this.setState({ loading: true });
-    const readAllListsUrl = `${this.getApiBaseUrl()}/api/read-lists`;
-    const readAllItemsUrl = `${this.getApiBaseUrl()}/api/read-items`;
+  useEffect(() => {
+    setArtistResults([]);
+    fetchArtistAlbums();
+    // Clear query?
+  }, [activeArtist]);
+
+  useEffect(() => {
+    setAlbums([]);
+    addActiveToList(getDefaultListId());
+    // Way to handle when cleared / empty?
+  }, [activeAlbum]);
+
+  const loadListItems = () => {
+    setLoading(true);
+    const readAllListsUrl = `${apiBaseUrl}/api/read-lists`;
+    const readAllItemsUrl = `${apiBaseUrl}/api/read-items`;
     Promise.all([axios.get(readAllListsUrl), axios.get(readAllItemsUrl)])
-      .then(axios.spread((...responses) => {
-        const items = responses[1].data;
-        const lists = responses[0].data.map(list => {
-          const listItems = items.filter(item => item.listId === list.id);
-          return { ...list, items: listItems };
-        });
-        this.setState({
-          lists,
-          loading: false
-        });
-      }))
+      .then(
+        axios.spread((...responses) => {
+          const items = responses[1].data;
+          const lists = responses[0].data.map(list => {
+            const listItems = items.filter(item => item.listId === list.id);
+            return { ...list, items: listItems };
+          });
+          setLists(lists);
+        })
+      )
       .catch(error => {
         console.log(error);
-        this.setState({ loading: false });
+      })
+      .finally(() => {
+        setLoading(false);
       });
-  }
+  };
 
-  getDefaultListId = () => {
-    const { lists } = this.state;
+  const getDefaultListId = () => {
     const defaultList = lists.find(list => list.isDefault);
     return defaultList ? defaultList.id : null;
-  }
+  };
 
-  deleteItem = (item) => {
+  const deleteItem = item => {
     const { itemId } = item;
-    const deleteItemUrl = `${this.getApiBaseUrl()}/api/delete-item/${itemId}`;
-    this.setState({ loading: true });
-    axios.delete(
-      deleteItemUrl
-    )
+    const deleteItemUrl = `${apiBaseUrl}/api/delete-item/${itemId}`;
+    setLoading(true);
+    axios
+      .delete(deleteItemUrl)
       .then(response => {
-        this.loadListItems();
+        loadListItems();
       })
       .catch(error => {
         console.log(error);
-        this.setState({ loading: false });
+        setLoading(false);
       });
-  }
+  };
 
-  moveItemToList = (item, listId = 2) => {
+  const moveItemToList = (item, listId = 2) => {
     const { itemId } = item;
-    const updateItemUrl = `${this.getApiBaseUrl()}/api/update-item/${itemId}`;
-    this.setState({ loading: true });
-    axios.put(
-      updateItemUrl,
-      { listId }
-    )
+    const updateItemUrl = `${apiBaseUrl}/api/update-item/${itemId}`;
+    setLoading(true);
+    axios
+      .put(updateItemUrl, { listId })
       .then(response => {
-        this.loadListItems();
+        loadListItems();
       })
       .catch(error => {
         console.log(error);
-        this.setState({ loading: false });
+        setLoading(false);
       });
-  }
+  };
 
-  readItem = async (id) => {
-    const readItemUrl = `${this.getApiBaseUrl()}/api/read-item/${id}`;
-    const item = await axios
-      .get(readItemUrl)
-      .then(response => {
-        return response.data;
-      })
-      .catch(error => {
-        console.log(error);
-        return {};
-      });
-    return item;
-  }
-
-  fetchArtists = (query) => {
-    if (this.cancel) {
-      this.cancel.cancel();
-    }
-    this.cancel = axios.CancelToken.source();
+  const fetchArtists = query => {
+    // if (this.cancel) {
+    //   this.cancel.cancel();
+    // }
+    // this.cancel = axios.CancelToken.source();
     if (query.length === 0) {
-      this.setState({ artistResults: [] });
+      setArtistResults([]);
       return;
     }
-    const artistSearchUrl = `${this.getApiBaseUrl()}/spotify/search-artist/${query}`;
+    const artistSearchUrl = `${apiBaseUrl}/spotify/search-artist/${query}`;
     axios
-      .get(
-        artistSearchUrl,
-        { cancelToken: this.cancel.token }
-      )
+      .get(artistSearchUrl /*, { cancelToken: this.cancel.token }*/)
       .then(response => {
-        this.setState({
-          artistResults: response.data,
-          message: '',
-        });
+        setArtistResults(response.data);
+        setMessage('');
       })
       .catch(error => {
         if (axios.isCancel(error) || error) {
-          this.setState({
-            message: 'Failed to fetch results. Please try again.',
-          });
+          setMessage('Failed to fetch results. Please try again.');
         }
       });
-  }
+  };
 
-  fetchArtistAlbums = () => {
-    const { activeArtist } = this.state;
-    if (this.cancel) {
-      this.cancel.cancel();
+  const fetchArtistAlbums = () => {
+    // if (this.cancel) {
+    //   this.cancel.cancel();
+    // }
+    // this.cancel = axios.CancelToken.source();
+    if (Object.keys(activeArtist).length === 0) {
+      // better way to do this?
+      return;
     }
-    this.cancel = axios.CancelToken.source();
-    const albumSearchUrl = `${this.getApiBaseUrl()}/spotify/get-artist-albums/${activeArtist.id}`;
+    const albumSearchUrl = `${apiBaseUrl}/spotify/get-artist-albums/${activeArtist.id}`;
     axios
-      .get(
-        albumSearchUrl,
-        { cancelToken: this.cancel.token }
-      )
+      .get(albumSearchUrl /*, { cancelToken: this.cancel.token }*/)
       .then(response => {
         console.log(response.data);
-        this.setState({
-          albums: response.data,
-          message: '',
-        })
+        setAlbums(response.data);
+        setMessage('');
       })
       .catch(error => {
         if (axios.isCancel(error) || error) {
-          this.setState({
-            message: 'Failed to fetch results. Please try again.',
-          });
+          setMessage('Failed to fetch results. Please try again.');
         }
       });
-  }
+  };
 
-  setArtist = (artist) => {
-    this.setState({
-      activeArtist: artist,
-      artistResults: [],
-    }, () => {
-      this.fetchArtistAlbums();
-    });
-    this.artistInput.current.clearQuery();
-  }
+  const setArtist = artist => {
+    setActiveArtist(artist);
+    // this.artistInput.current.clearQuery();
+  };
 
-  setAlbum = (album) => {
-    this.setState({
-      activeAlbum: album,
-      albums: [],
-    }, () => {
-      this.addActiveToList(this.getDefaultListId());
-    });
-  }
+  const setAlbum = album => {
+    setActiveAlbum(album);
+  };
 
-  constructItemFromState = () => {
+  const constructItemFromState = () => {
     const {
-      activeArtist: {
-        id: artistId,
-        name: artistName,
-        href: artistUrl,
-        images: artistImages,
-        genres: artistGenres,
-      },
-      activeAlbum: {
-        id: albumId,
-        name: albumName,
-        href: albumUrl,
-        images: albumImages,
-        release_date: albumReleaseDate,
-        total_tracks: albumTracksAmount,
-      },
-    } = this.state || {};
+      id: artistId,
+      name: artistName,
+      href: artistUrl,
+      images: artistImages,
+      genres: artistGenres,
+    } = activeArtist;
+    const {
+      id: albumId,
+      name: albumName,
+      href: albumUrl,
+      images: albumImages,
+      release_date: albumReleaseDate,
+      total_tracks: albumTracksAmount,
+    } = activeAlbum;
 
     return {
       artistId,
@@ -231,124 +195,100 @@ class App extends Component {
       albumReleaseDate: albumReleaseDate || null,
       albumTracksAmount: albumTracksAmount || null,
     };
-  }
+  };
 
-  addActiveToList = (listId = null) => {
-    if (!this.hasActiveArtist()) {
+  const hasActiveArtist = Object.keys(activeArtist).length > 0;
+
+  const addActiveToList = (listId = null) => {
+    if (!hasActiveArtist) {
       return;
     }
-    const item = this.constructItemFromState();
-    item.listId = listId || this.getDefaultListId();
+    const item = constructItemFromState();
+    item.listId = listId || getDefaultListId();
     console.log(item);
-    if (this.cancel) {
-      this.cancel.cancel();
-    }
-    this.cancel = axios.CancelToken.source();
-    this.setState({loading: true});
-    const createItemUrl = `${this.getApiBaseUrl()}/api/create-item`;
+    // if (this.cancel) {
+    //   this.cancel.cancel();
+    // }
+    // this.cancel = axios.CancelToken.source();
+    setLoading(true);
+    const createItemUrl = `${apiBaseUrl}/api/create-item`;
     axios
-      .post(
-        createItemUrl,
-        item,
-        { cancelToken: this.cancel.token }
-      )
+      .post(createItemUrl, item /*, { cancelToken: this.cancel.token }*/)
       .then(response => {
-        this.setState({
-          loading: false,
-          activeArtist: {},
-          activeAlbum: {},
-        }, () => {
-          this.loadListItems();
-        });
+        setActiveArtist({});
+        setActiveAlbum({});
+        // TODO: load only changed list?
+        loadListItems();
       })
       .catch(error => {
         if (axios.isCancel(error) || error) {
           console.log(error);
-          this.setState({
-            loading: false,
-            message: 'Failed to create item. Please try again.',
-          });
+          setMessage('Failed to create item. Please try again.');
         }
-      });
-  }
+      })
+      .finally(() => setLoading(false));
+  };
 
-  hasActiveArtist = () => {
-    const { activeArtist } = this.state;
-    return Object.keys(activeArtist).length > 0;
-  }
+  const isArtistInputVisible = !hasActiveArtist;
 
-  clearActiveArtist = () => {
-    this.setState({
-      activeArtist: {},
-    });
-  }
+  const isAlbumInputVisible = hasActiveArtist && !loading;
 
-  isArtistInputVisible = () => {
-    return !this.hasActiveArtist();
-  }
-
-  isAlbumInputVisible = () => {
-    const { loading } = this.state;
-    return this.hasActiveArtist() && !loading;
-  }
-
-  renderArtists = () => {
-    const { artistResults } = this.state;
-
-    if (Object.keys(artistResults) && artistResults.length) {
-      return (
-        <Box my={2}>
-          { artistResults.map(result => (
-            <p key={result.id} onClick={this.setArtist}>{ result.name }</p>
-          ))}
-        </Box>
-      )
-    }
-  }
-
-  render = () => {
-    const { artistResults, activeArtist, albums, lists, loading } = this.state;
-    const { classes } = this.props;
-    const listContent = lists.map(list => {
+  const getListContent = () => {
+    return lists.map(list => {
       const listActions = lists.filter(l => l.id !== list.id);
-      return (<MusicList key={list.id} list={list} listActions={listActions} onMoveItem={this.moveItemToList} onDeleteItem={this.deleteItem} />)
+      return (
+        <MusicList
+          key={list.id}
+          list={list}
+          listActions={listActions}
+          onMoveItem={moveItemToList}
+          onDeleteItem={deleteItem}
+        />
+      );
     });
-    let artistContent = '';
-    if (artistResults.length) {
-      const artistElements = artistResults.map(artist => (
-        <React.Fragment key={artist.id}>
-          <ArtistResultListItem key={artist.id} artist={artist} onSelectArtist={this.setArtist} />
-          <Divider component="li" />
-        </React.Fragment>
-      ));
-      artistContent = <List>{artistElements}</List>;
-    }
-    return (
-      <Container maxWidth="sm" className="app">
-        <Backdrop className={classes.backdrop} open={loading}>
-          <CircularProgress color="inherit" disableShrink />
-        </Backdrop>
-        <Box my={4}>
-          <ArtistInput
-            ref={this.artistInput}
-            showInput={this.isArtistInputVisible()}
-            onInputChange={this.fetchArtists} />
-          {artistContent}
-          <ActiveArtist
-            artist={activeArtist}
-            onDismiss={this.clearActiveArtist}
-            onAdd={this.addActiveToList} />
-          <Box my={2}>
-            <AlbumInput
-              albums={albums}
-              showInput={this.isAlbumInputVisible()}
-              onSelectAlbum={this.setAlbum} />
-          </Box>
-          { listContent }
+  };
+
+  const getArtistContent = () => {
+    const elements = artistResults.map(artist => (
+      <React.Fragment key={artist.id}>
+        <ArtistResultListItem
+          key={artist.id}
+          artist={artist}
+          onSelectArtist={setArtist}
+        />
+        <Divider component="li" />
+      </React.Fragment>
+    ));
+    return <List>{elements}</List>;
+  };
+
+  return (
+    <Container maxWidth="sm" className="app">
+      <Backdrop className={classes.backdrop} open={loading}>
+        <CircularProgress color="inherit" disableShrink />
+      </Backdrop>
+      <Box my={4}>
+        <ArtistInput
+          showInput={isArtistInputVisible}
+          onInputChange={fetchArtists}
+        />
+        {getArtistContent()}
+        <ActiveArtist
+          artist={activeArtist}
+          onDismiss={() => setActiveArtist({})}
+          onAdd={addActiveToList}
+        />
+        <Box my={2}>
+          <AlbumInput
+            albums={albums}
+            showInput={isAlbumInputVisible}
+            onSelectAlbum={setAlbum}
+          />
         </Box>
-      </Container>
-    )
-  }
-}
+        {getListContent()}
+      </Box>
+    </Container>
+  );
+};
 
 export default withStyles(styles)(App);

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -26,25 +26,15 @@ const styles = theme => ({
   },
 });
 
-class ActiveArtist extends Component {
+const ActiveArtist = props => {
+  const { artist, classes, onAdd, onDismiss } = props;
 
-  handleAdd = () => {
-    const { onAdd } = this.props;
-    onAdd();
+  if (Object.keys(artist).length === 0) {
+    return '';
   }
 
-  handleDismiss = () => {
-    const { onDismiss } = this.props;
-    onDismiss();
-  }
-
-	render = () => {
-    const { artist, classes } = this.props;
-    if (Object.keys(artist).length === 0) {
-      return (null);
-    }
-    return (
-      <Card>
+  return (
+    <Card>
         <CardContent className={classes.centered}>
           <AvatarImage
             images={artist.images}
@@ -57,19 +47,18 @@ class ActiveArtist extends Component {
           <Button
             color="primary"
             startIcon={<PlaylistAddIcon />}
-            onClick={this.handleAdd}>
+            onClick={() => onAdd()}>
               Add to queue
           </Button>
           <Button
             color="secondary"
             endIcon={<DeleteIcon />}
-            onClick={this.handleDismiss}>
+            onClick={() => onDismiss()}>
               Dismiss
           </Button>
         </CardActions>
       </Card>
-    )
-  }
+  )
 }
 
 ActiveArtist.propTypes = {

@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import {
-  ExpansionPanel,
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
-  ExpansionPanelActions,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  AccordionActions,
   Divider,
   Chip,
   Button,
@@ -37,171 +37,176 @@ const styles = theme => ({
   },
   insetRight: {
     marginRight: theme.spacing(4.5),
-  }
+  },
 });
 
-class MusicListItem extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      listDialogOpen: false,
-      selectedList: null,
-      deleteDialogOpen: false,
-    }
-  }
+const MusicListItem = props => {
+  const { item, listActions, onDeleteItem, onMoveItem, classes } = props;
+  const [selectedList, setSelectedList] = useState(null);
+  const [listDialogOpen, setListDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  openListDialog = () => {
-    this.setState({
-      listDialogOpen: true,
-      selectedList: null,
-    });
-  }
+  const hasAlbum = () => item.albumId !== null;
 
-  closeListDialog = () => {
-    this.setState({
-      listDialogOpen: false,
-      selectedList: null,
-    });
-  }
+  const getYear = dateString => new Date(dateString).getFullYear();
 
-  handleDialogListSelect = (e) => {
-    this.setState({
-      selectedList: e.target.value,
-    });
-  }
+  const getDateFromSeconds = seconds =>
+    new Date(seconds * 1000).toLocaleString();
 
-  handleDeleteClick = () => {
-    this.setState({
-      deleteDialogOpen: true,
-    });
-  }
-
-  closeDeleteDialog = () => {
-    this.setState({
-      deleteDialogOpen: false,
-    });
-  }
-
-  handleDeleteItem = () => {
-    const { item, onDeleteItem } = this.props;
-    onDeleteItem(item);
-  }
-
-  handleListDialogOk = () => {
-    const { item, onMoveItem } = this.props;
-    const { selectedList } = this.state;
-    onMoveItem(item, selectedList);
-    this.closeListDialog();
-  }
-
-  hasAlbum = () => {
-    const { item } = this.props;
-    return item.albumId !== null;
-  }
-
-  getYear = (dateString) => {
-    return new Date(dateString).getFullYear();
-  }
-
-  getDateFromSeconds = (seconds) => {
-    return new Date(seconds * 1000).toLocaleString();
-  }
-
-  render = () => {
-    const { item, listActions, classes } = this.props;
-    const { listDialogOpen, deleteDialogOpen } = this.state;
-    let album = '';
-    const tooltipText = (
-      <React.Fragment>
-        Created: {this.getDateFromSeconds(item.createdAt._seconds)}<br />
-        Last updated: {this.getDateFromSeconds(item.lastUpdatedAt._seconds)}
-      </React.Fragment>
-    )
-    let itemType = <Chip variant="outlined" size="small" color="primary" icon={<MusicNoteIcon />} label="Artist" />;
-    if (this.hasAlbum()) {
-      album = (
-        <React.Fragment>
+  const getAlbum = () => {
+    if (hasAlbum()) {
+      return (
+        <>
           <AvatarImage
             images={item.albumImages}
             alt={item.albumName}
             imageSize="medium"
-            fallback={<AlbumIcon style={{ fontSize: 42 }} />} />
-          <Typography variant="subtitle1">{item.albumName} <small>({this.getYear(item.albumReleaseDate)})</small></Typography>
-          <Typography variant="subtitle2">{item.albumTracksAmount} tracks</Typography>
-        </React.Fragment>
+            fallback={<AlbumIcon style={{ fontSize: 42 }} />}
+          />
+          <Typography variant="subtitle1">
+            {item.albumName} <small>({getYear(item.albumReleaseDate)})</small>
+          </Typography>
+          <Typography variant="subtitle2">
+            {item.albumTracksAmount} tracks
+          </Typography>
+        </>
       );
-      itemType = <Chip variant="outlined" size="small" color="primary" icon={<AlbumIcon />} label="Album" />;
     }
-    itemType = (
-      <Tooltip title={tooltipText} TransitionComponent={Zoom} arrow>
-        {itemType}
-      </Tooltip>
-    );
-    const lists = listActions.map(list => (
-      <FormControlLabel value={list.id} key={list.id} control={<Radio />} label={list.title} />
-    ));
+    return '';
+  };
+
+  const getItemType = () => {
+    if (hasAlbum()) {
+      return (
+        <Chip
+          variant="outlined"
+          size="small"
+          color="primary"
+          icon={<AlbumIcon />}
+          label="Album"
+        />
+      );
+    }
     return (
-      <ExpansionPanel TransitionProps={{ unmountOnExit: true }}>
-        <ExpansionPanelSummary
-          expandIcon={<ExpandMoreIcon />}>
-          <div className={classes.centered}>
-            <AvatarImage
-              images={item.artistImages}
-              alt={item.artistName}
-              imageSize="medium"
-              fallback={<MusicNoteIcon style={{ fontSize: 42 }} />} />
-            <Typography variant="h5">{item.artistName}</Typography>
-            {itemType}
-          </div>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
-          <div className={`${classes.centered} ${classes.insetRight}`}>
-            {album}
-          </div>
-        </ExpansionPanelDetails>
-        <Divider />
-        <ExpansionPanelActions>
-          <Button startIcon={<DeleteIcon />} color="secondary" onClick={this.handleDeleteClick}>Remove</Button>
-          <Button startIcon={<PlaylistAddIcon />} color="primary" onClick={this.openListDialog}>Move to list</Button>
-          <Dialog open={deleteDialogOpen}>
-            <DialogTitle>Permanently remove item?</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Do you really want to <strong>remove</strong> this item instead of moving it to another list?
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button autoFocus onClick={this.closeDeleteDialog} color="primary">
-                Cancel
-                </Button>
-              <Button onClick={this.handleDeleteItem} color="secondary">
-                Delete
-                </Button>
-            </DialogActions>
-          </Dialog>
-          <Dialog open={listDialogOpen}>
-            <DialogTitle>Move to list</DialogTitle>
-            <DialogContent dividers>
-              <RadioGroup onChange={this.handleDialogListSelect}>
-                {lists}
-              </RadioGroup>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={this.closeListDialog} color="secondary">Cancel</Button>
-              <Button disabled={this.state.selectedList === null} onClick={this.handleListDialogOk} color="primary">Ok</Button>
-            </DialogActions>
-          </Dialog>
-        </ExpansionPanelActions>
-      </ExpansionPanel>
-    )
-  }
-}
+      <Chip
+        variant="outlined"
+        size="small"
+        color="primary"
+        icon={<MusicNoteIcon />}
+        label="Artist"
+      />
+    );
+  };
+
+  const getLists = () => {
+    return listActions.map(list => (
+      <FormControlLabel
+        value={list.id}
+        key={list.id}
+        control={<Radio />}
+        label={list.title}
+      />
+    ));
+  };
+
+  const getTooltip = () => {
+    return (
+      <>
+        Created: {getDateFromSeconds(item.createdAt._seconds)}
+        <br />
+        Last updated: {getDateFromSeconds(item.lastUpdatedAt._seconds)}
+      </>
+    );
+  };
+
+  return (
+    <Accordion TransitionProps={{ unmountOnExit: true }}>
+      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+        <div className={classes.centered}>
+          <AvatarImage
+            images={item.artistImages}
+            alt={item.artistName}
+            imageSize="medium"
+            fallback={<MusicNoteIcon style={{ fontSize: 42 }} />}
+          />
+          <Typography variant="h5">{item.artistName}</Typography>
+          <Tooltip title={getTooltip()} TransitionComponent={Zoom} arrow>
+            {getItemType()}
+          </Tooltip>
+        </div>
+      </AccordionSummary>
+      <AccordionDetails>
+        <div className={`${classes.centered} ${classes.insetRight}`}>
+          {getAlbum()}
+        </div>
+      </AccordionDetails>
+      <Divider />
+      <AccordionActions>
+        <Button
+          startIcon={<DeleteIcon />}
+          color="secondary"
+          onClick={() => setDeleteDialogOpen(true)}
+        >
+          Remove
+        </Button>
+        <Button
+          startIcon={<PlaylistAddIcon />}
+          color="primary"
+          onClick={() => setListDialogOpen(true)}
+        >
+          Move to list
+        </Button>
+        <Dialog open={deleteDialogOpen}>
+          <DialogTitle>Permanently remove item?</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Do you really want to <strong>remove</strong> this item instead of
+              moving it to another list?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              autoFocus
+              onClick={() => setDeleteDialogOpen(false)}
+              color="primary"
+            >
+              Cancel
+            </Button>
+            <Button onClick={() => onDeleteItem(item)} color="secondary">
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog open={listDialogOpen}>
+          <DialogTitle>Move to list</DialogTitle>
+          <DialogContent dividers>
+            <RadioGroup onChange={e => setSelectedList(e.target.value)}>
+              {getLists()}
+            </RadioGroup>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setListDialogOpen(false)} color="secondary">
+              Cancel
+            </Button>
+            <Button
+              disabled={selectedList === null}
+              onClick={() => onMoveItem(item, selectedList)}
+              color="primary"
+            >
+              Ok
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </AccordionActions>
+    </Accordion>
+  );
+};
 
 MusicListItem.propTypes = {
   item: PropTypes.object,
   listActions: PropTypes.array,
-  handleDeleteItem: PropTypes.func,
+  onDeleteItem: PropTypes.func,
   onMoveItem: PropTypes.func,
-}
+};
 
 export default withStyles(styles)(MusicListItem);
