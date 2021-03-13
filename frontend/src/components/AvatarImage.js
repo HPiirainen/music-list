@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  Avatar,
-} from '@material-ui/core';
+import { Avatar } from '@material-ui/core';
 
 const styles = theme => ({
   large: {
@@ -23,21 +21,21 @@ const AvatarImage = props => {
   const image = images.find(image => image.width <= maxWidth);
 
   if (!image) {
-    return <Avatar className={classes[imageSize]}>{ fallback }</Avatar>;
+    return <Avatar className={classes[imageSize]}>{fallback}</Avatar>;
   }
   return <Avatar alt={alt} src={image.url} className={classes[imageSize]} />;
-}
+};
 
 AvatarImage.defaultProps = {
   maxWidth: 300,
   imageSize: 'small',
-}
+};
 
 AvatarImage.propTypes = {
   alt: PropTypes.string.isRequired,
   fallback: PropTypes.element.isRequired,
   maxWidth: PropTypes.number,
   imageSize: PropTypes.string,
-}
+};
 
 export default withStyles(styles)(AvatarImage);

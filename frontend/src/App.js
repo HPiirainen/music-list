@@ -30,8 +30,10 @@ const App = props => {
   const [artistResults, setArtistResults] = useState([]);
   const [activeAlbum, setActiveAlbum] = useState({});
   const [albums, setAlbums] = useState([]);
+  const [artistQuery, setArtistQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+
+  console.log('Render: App');
 
   const apiBaseUrl = 'http://localhost:5001/music-app-a2bd9/us-central1/app';
 
@@ -40,9 +42,10 @@ const App = props => {
   }, []);
 
   useEffect(() => {
-    setArtistResults([]);
+    // setArtistResults([]);
+    // console.log('artistResults cleared');
     fetchArtistAlbums();
-    // Clear query?
+    setArtistQuery('');
   }, [activeArtist]);
 
   useEffect(() => {
@@ -50,6 +53,10 @@ const App = props => {
     addActiveToList(getDefaultListId());
     // Way to handle when cleared / empty?
   }, [activeAlbum]);
+
+  useEffect(() => {
+    fetchArtists();
+  }, [artistQuery]);
 
   const loadListItems = () => {
     setLoading(true);
@@ -109,56 +116,40 @@ const App = props => {
       });
   };
 
-  const fetchArtists = query => {
-    // if (this.cancel) {
-    //   this.cancel.cancel();
-    // }
-    // this.cancel = axios.CancelToken.source();
-    if (query.length === 0) {
+  const fetchArtists = () => {
+    if (artistQuery.length === 0) {
       setArtistResults([]);
       return;
     }
-    const artistSearchUrl = `${apiBaseUrl}/spotify/search-artist/${query}`;
+    const artistSearchUrl = `${apiBaseUrl}/spotify/search-artist/${artistQuery}`;
     axios
-      .get(artistSearchUrl /*, { cancelToken: this.cancel.token }*/)
+      .get(artistSearchUrl)
       .then(response => {
         setArtistResults(response.data);
-        setMessage('');
       })
       .catch(error => {
-        if (axios.isCancel(error) || error) {
-          setMessage('Failed to fetch results. Please try again.');
-        }
+        console.log(error);
       });
   };
 
   const fetchArtistAlbums = () => {
-    // if (this.cancel) {
-    //   this.cancel.cancel();
-    // }
-    // this.cancel = axios.CancelToken.source();
     if (Object.keys(activeArtist).length === 0) {
       // better way to do this?
       return;
     }
     const albumSearchUrl = `${apiBaseUrl}/spotify/get-artist-albums/${activeArtist.id}`;
     axios
-      .get(albumSearchUrl /*, { cancelToken: this.cancel.token }*/)
+      .get(albumSearchUrl)
       .then(response => {
-        console.log(response.data);
         setAlbums(response.data);
-        setMessage('');
       })
       .catch(error => {
-        if (axios.isCancel(error) || error) {
-          setMessage('Failed to fetch results. Please try again.');
-        }
+        console.log(error);
       });
   };
 
   const setArtist = artist => {
     setActiveArtist(artist);
-    // this.artistInput.current.clearQuery();
   };
 
   const setAlbum = album => {
@@ -205,15 +196,10 @@ const App = props => {
     }
     const item = constructItemFromState();
     item.listId = listId || getDefaultListId();
-    console.log(item);
-    // if (this.cancel) {
-    //   this.cancel.cancel();
-    // }
-    // this.cancel = axios.CancelToken.source();
     setLoading(true);
     const createItemUrl = `${apiBaseUrl}/api/create-item`;
     axios
-      .post(createItemUrl, item /*, { cancelToken: this.cancel.token }*/)
+      .post(createItemUrl, item)
       .then(response => {
         setActiveArtist({});
         setActiveAlbum({});
@@ -221,10 +207,7 @@ const App = props => {
         loadListItems();
       })
       .catch(error => {
-        if (axios.isCancel(error) || error) {
-          console.log(error);
-          setMessage('Failed to create item. Please try again.');
-        }
+        console.log(error);
       })
       .finally(() => setLoading(false));
   };
@@ -269,8 +252,9 @@ const App = props => {
       </Backdrop>
       <Box my={4}>
         <ArtistInput
+          value={artistQuery}
           showInput={isArtistInputVisible}
-          onInputChange={fetchArtists}
+          onInputChange={e => setArtistQuery(e.target.value)}
         />
         {getArtistContent()}
         <ActiveArtist

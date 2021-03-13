@@ -46,6 +46,8 @@ const MusicListItem = props => {
   const [listDialogOpen, setListDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  console.log('Render: MusicListItem');
+
   const hasAlbum = () => item.albumId !== null;
 
   const getYear = dateString => new Date(dateString).getFullYear();

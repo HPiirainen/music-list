@@ -29,42 +29,47 @@ const styles = theme => ({
 const ActiveArtist = props => {
   const { artist, classes, onAdd, onDismiss } = props;
 
+  console.log('Render: ActiveArtist');
+
   if (Object.keys(artist).length === 0) {
     return '';
   }
 
   return (
     <Card>
-        <CardContent className={classes.centered}>
-          <AvatarImage
-            images={artist.images}
-            alt={artist.name}
-            fallback={<MusicNoteIcon  style={{ fontSize: 120 }} />}
-            imageSize="large" />
-          <Typography variant="h2">{ artist.name }</Typography>
-        </CardContent>
-        <CardActions className={classes.spacedEvenly}>
-          <Button
-            color="primary"
-            startIcon={<PlaylistAddIcon />}
-            onClick={() => onAdd()}>
-              Add to queue
-          </Button>
-          <Button
-            color="secondary"
-            endIcon={<DeleteIcon />}
-            onClick={() => onDismiss()}>
-              Dismiss
-          </Button>
-        </CardActions>
-      </Card>
-  )
-}
+      <CardContent className={classes.centered}>
+        <AvatarImage
+          images={artist.images}
+          alt={artist.name}
+          fallback={<MusicNoteIcon style={{ fontSize: 120 }} />}
+          imageSize="large"
+        />
+        <Typography variant="h2">{artist.name}</Typography>
+      </CardContent>
+      <CardActions className={classes.spacedEvenly}>
+        <Button
+          color="primary"
+          startIcon={<PlaylistAddIcon />}
+          onClick={() => onAdd()}
+        >
+          Add to queue
+        </Button>
+        <Button
+          color="secondary"
+          endIcon={<DeleteIcon />}
+          onClick={() => onDismiss()}
+        >
+          Dismiss
+        </Button>
+      </CardActions>
+    </Card>
+  );
+};
 
 ActiveArtist.propTypes = {
   artist: PropTypes.object.isRequired,
   onDismiss: PropTypes.func.isRequired,
   onAdd: PropTypes.func.isRequired,
-}
+};
 
 export default withStyles(styles)(ActiveArtist);

@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { TextField } from '@material-ui/core';
 
 const ArtistInput = props => {
-  const { showInput, onInputChange } = props;
-  const [query, setQuery] = useState('');
+  const { artistQuery, showInput, onInputChange } = props;
 
-  useEffect(() => {
-    onInputChange(query);
-  }, [query]);
+  console.log('Render: ArtistInput');
 
   if (!showInput) {
     return '';
@@ -20,13 +17,14 @@ const ArtistInput = props => {
       label="Search for artist"
       variant="outlined"
       fullWidth
-      value={query}
-      onChange={e => setQuery(e.target.value)}
+      value={artistQuery}
+      onChange={onInputChange}
     />
   );
 };
 
 ArtistInput.propTypes = {
+  artistQuery: PropTypes.string,
   showInput: PropTypes.bool,
   onInputChange: PropTypes.func,
 };
