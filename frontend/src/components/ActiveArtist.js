@@ -29,8 +29,6 @@ const styles = theme => ({
 const ActiveArtist = props => {
   const { artist, classes, onAdd, onDismiss } = props;
 
-  console.log('Render: ActiveArtist');
-
   if (Object.keys(artist).length === 0) {
     return '';
   }

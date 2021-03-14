@@ -14,6 +14,7 @@ import ArtistResultListItem from './components/ArtistResultListItem';
 import ActiveArtist from './components/ActiveArtist';
 import AlbumInput from './components/AlbumInput';
 import MusicList from './components/MusicList';
+import Message from './components/Message';
 import './App.css';
 
 const styles = theme => ({
@@ -22,6 +23,11 @@ const styles = theme => ({
     color: '#fff',
   },
 });
+
+const messageTypes = {
+  error: 'error',
+  success: 'success',
+};
 
 const App = props => {
   const { classes } = props;
@@ -32,10 +38,9 @@ const App = props => {
   const [albums, setAlbums] = useState([]);
   const [artistQuery, setArtistQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState({});
 
-  console.log('Render: App');
-
-  const apiBaseUrl = 'http://localhost:5001/music-app-a2bd9/us-central1/app';
+  const apiBaseUrl = 'http://localhost:5000';
 
   useEffect(() => {
     loadListItems();
@@ -43,7 +48,6 @@ const App = props => {
 
   useEffect(() => {
     // setArtistResults([]);
-    // console.log('artistResults cleared');
     fetchArtistAlbums();
     setArtistQuery('');
   }, [activeArtist]);
@@ -58,17 +62,17 @@ const App = props => {
     fetchArtists();
   }, [artistQuery]);
 
-  const loadListItems = () => {
+  const loadListItems = async () => {
     setLoading(true);
-    const readAllListsUrl = `${apiBaseUrl}/api/read-lists`;
-    const readAllItemsUrl = `${apiBaseUrl}/api/read-items`;
-    Promise.all([axios.get(readAllListsUrl), axios.get(readAllItemsUrl)])
+    const readListsUrl = `${apiBaseUrl}/lists`;
+    const readItemsUrl = `${apiBaseUrl}/items`;
+    Promise.all([axios.get(readListsUrl), axios.get(readItemsUrl)])
       .then(
         axios.spread((...responses) => {
-          const items = responses[1].data;
+          const allItems = responses[1].data;
           const lists = responses[0].data.map(list => {
-            const listItems = items.filter(item => item.listId === list.id);
-            return { ...list, items: listItems };
+            const items = allItems.filter(item => item.list === list._id);
+            return { ...list, items };
           });
           setLists(lists);
         })
@@ -83,12 +87,11 @@ const App = props => {
 
   const getDefaultListId = () => {
     const defaultList = lists.find(list => list.isDefault);
-    return defaultList ? defaultList.id : null;
+    return defaultList ? defaultList._id : null;
   };
 
   const deleteItem = item => {
-    const { itemId } = item;
-    const deleteItemUrl = `${apiBaseUrl}/api/delete-item/${itemId}`;
+    const deleteItemUrl = `${apiBaseUrl}/items/delete/${item._id}`;
     setLoading(true);
     axios
       .delete(deleteItemUrl)
@@ -101,12 +104,11 @@ const App = props => {
       });
   };
 
-  const moveItemToList = (item, listId = 2) => {
-    const { itemId } = item;
-    const updateItemUrl = `${apiBaseUrl}/api/update-item/${itemId}`;
+  const moveItemToList = (item, listId) => {
+    const updateItemUrl = `${apiBaseUrl}/items/update/${item._id}`;
     setLoading(true);
     axios
-      .put(updateItemUrl, { listId })
+      .put(updateItemUrl, { list: listId })
       .then(response => {
         loadListItems();
       })
@@ -121,7 +123,7 @@ const App = props => {
       setArtistResults([]);
       return;
     }
-    const artistSearchUrl = `${apiBaseUrl}/spotify/search-artist/${artistQuery}`;
+    const artistSearchUrl = `${apiBaseUrl}/spotify/artist/${artistQuery}`;
     axios
       .get(artistSearchUrl)
       .then(response => {
@@ -137,7 +139,7 @@ const App = props => {
       // better way to do this?
       return;
     }
-    const albumSearchUrl = `${apiBaseUrl}/spotify/get-artist-albums/${activeArtist.id}`;
+    const albumSearchUrl = `${apiBaseUrl}/spotify/artist/${activeArtist.id}/albums`;
     axios
       .get(albumSearchUrl)
       .then(response => {
@@ -157,36 +159,34 @@ const App = props => {
   };
 
   const constructItemFromState = () => {
-    const {
-      id: artistId,
-      name: artistName,
-      href: artistUrl,
-      images: artistImages,
-      genres: artistGenres,
-    } = activeArtist;
-    const {
-      id: albumId,
-      name: albumName,
-      href: albumUrl,
-      images: albumImages,
-      release_date: albumReleaseDate,
-      total_tracks: albumTracksAmount,
-    } = activeAlbum;
+    const artist = {
+      id: activeArtist.id,
+      name: activeArtist.name,
+      url: activeArtist.href,
+      images: activeArtist.images,
+      genres: activeArtist.genres,
+    };
+
+    let album = null;
+
+    if (hasActiveAlbum) {
+      album = {
+        id: activeAlbum.id,
+        name: activeAlbum.name,
+        url: activeAlbum.href,
+        images: activeAlbum.images,
+        releaseDate: activeAlbum.release_date,
+        tracks: activeAlbum.total_tracks,
+      };
+    }
 
     return {
-      artistId,
-      artistName,
-      artistUrl,
-      artistImages,
-      artistGenres,
-      albumId: albumId || null,
-      albumName: albumName || null,
-      albumUrl: albumUrl || null,
-      albumImages: albumImages || null,
-      albumReleaseDate: albumReleaseDate || null,
-      albumTracksAmount: albumTracksAmount || null,
+      artist,
+      album,
     };
   };
+
+  const hasActiveAlbum = Object.keys(activeAlbum).length > 0;
 
   const hasActiveArtist = Object.keys(activeArtist).length > 0;
 
@@ -195,22 +195,39 @@ const App = props => {
       return;
     }
     const item = constructItemFromState();
-    item.listId = listId || getDefaultListId();
+    item.list = listId || getDefaultListId();
     setLoading(true);
-    const createItemUrl = `${apiBaseUrl}/api/create-item`;
+    const createItemUrl = `${apiBaseUrl}/items/create`;
     axios
       .post(createItemUrl, item)
-      .then(response => {
+      .then(() => {
         setActiveArtist({});
         setActiveAlbum({});
-        // TODO: load only changed list?
         loadListItems();
       })
       .catch(error => {
-        console.log(error);
+        handleError(error.response.data);
       })
       .finally(() => setLoading(false));
   };
+
+  const handleError = data => {
+    if (data.name === 'ValidationError') {
+      const messages = Object.values(data.errors).map(error => {
+        return error.message;
+      });
+      messages.push('moi moi');
+      const message = {
+        message: messages,
+        type: messageTypes.error,
+      };
+      setMessage(message);
+    }
+  };
+
+  const clearMessage = () => {
+    setMessage({});
+  }
 
   const isArtistInputVisible = !hasActiveArtist;
 
@@ -218,10 +235,10 @@ const App = props => {
 
   const getListContent = () => {
     return lists.map(list => {
-      const listActions = lists.filter(l => l.id !== list.id);
+      const listActions = lists.filter(l => l._id !== list._id);
       return (
         <MusicList
-          key={list.id}
+          key={list._id}
           list={list}
           listActions={listActions}
           onMoveItem={moveItemToList}
@@ -271,6 +288,7 @@ const App = props => {
         </Box>
         {getListContent()}
       </Box>
+      <Message message={message} onClear={clearMessage}></Message>
     </Container>
   );
 };

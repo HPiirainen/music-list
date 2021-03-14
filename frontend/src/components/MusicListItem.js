@@ -46,30 +46,25 @@ const MusicListItem = props => {
   const [listDialogOpen, setListDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  console.log('Render: MusicListItem');
-
-  const hasAlbum = () => item.albumId !== null;
+  const hasAlbum = () => item.album !== null;
 
   const getYear = dateString => new Date(dateString).getFullYear();
-
-  const getDateFromSeconds = seconds =>
-    new Date(seconds * 1000).toLocaleString();
 
   const getAlbum = () => {
     if (hasAlbum()) {
       return (
         <>
           <AvatarImage
-            images={item.albumImages}
-            alt={item.albumName}
+            images={item.album.images}
+            alt={item.album.name}
             imageSize="medium"
             fallback={<AlbumIcon style={{ fontSize: 42 }} />}
           />
           <Typography variant="subtitle1">
-            {item.albumName} <small>({getYear(item.albumReleaseDate)})</small>
+            {item.album.name} <small>({getYear(item.album.releaseDate)})</small>
           </Typography>
           <Typography variant="subtitle2">
-            {item.albumTracksAmount} tracks
+            {item.album.tracks} tracks
           </Typography>
         </>
       );
@@ -103,8 +98,8 @@ const MusicListItem = props => {
   const getLists = () => {
     return listActions.map(list => (
       <FormControlLabel
-        value={list.id}
-        key={list.id}
+        value={list._id}
+        key={list._id}
         control={<Radio />}
         label={list.title}
       />
@@ -112,11 +107,14 @@ const MusicListItem = props => {
   };
 
   const getTooltip = () => {
+    const locale = 'fi';
+    const created = new Date(item.createdAt).toLocaleString(locale);
+    const updated = new Date(item.updatedAt).toLocaleString(locale);
     return (
       <>
-        Created: {getDateFromSeconds(item.createdAt._seconds)}
+        Created: {created}
         <br />
-        Last updated: {getDateFromSeconds(item.lastUpdatedAt._seconds)}
+        Last updated: {updated}
       </>
     );
   };
@@ -126,12 +124,12 @@ const MusicListItem = props => {
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <div className={classes.centered}>
           <AvatarImage
-            images={item.artistImages}
-            alt={item.artistName}
+            images={item.artist.images}
+            alt={item.artist.name}
             imageSize="medium"
             fallback={<MusicNoteIcon style={{ fontSize: 42 }} />}
           />
-          <Typography variant="h5">{item.artistName}</Typography>
+          <Typography variant="h5">{item.artist.name}</Typography>
           <Tooltip title={getTooltip()} TransitionComponent={Zoom} arrow>
             {getItemType()}
           </Tooltip>

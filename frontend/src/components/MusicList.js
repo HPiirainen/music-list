@@ -18,14 +18,12 @@ const styles = theme => ({
 const MusicList = props => {
   const { list, listActions, onMoveItem, onDeleteItem, classes } = props;
 
-  console.log('Render: MusicList');
-
   const getContent = () => {
     if (list.items.length) {
       return list.items.map(item => (
         <MusicListItem
           className={classes.list}
-          key={item.itemId}
+          key={item._id}
           item={item}
           listActions={listActions}
           onMoveItem={onMoveItem}

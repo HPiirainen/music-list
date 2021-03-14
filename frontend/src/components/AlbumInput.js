@@ -8,8 +8,6 @@ import AvatarImage from './AvatarImage';
 const AlbumInput = props => {
   const { showInput, albums, onSelectAlbum } = props;
 
-  console.log('Render: AlbumInput');
-
   const getYear = dateString => new Date(dateString).getFullYear();
 
   const renderAlbum = album => {

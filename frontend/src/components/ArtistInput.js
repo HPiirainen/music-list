@@ -5,8 +5,6 @@ import { TextField } from '@material-ui/core';
 const ArtistInput = props => {
   const { artistQuery, showInput, onInputChange } = props;
 
-  console.log('Render: ArtistInput');
-
   if (!showInput) {
     return '';
   }

@@ -8,8 +8,6 @@ import GenreList from './GenreList';
 const ArtistResultListItem = props => {
   const { artist, onSelectArtist } = props;
 
-  console.log('Render: ArtistResultListItem');
-
   if (Object.keys(artist).length === 0) {
     return '';
   }
