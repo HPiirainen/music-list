@@ -12,6 +12,10 @@ const listSchema = new Schema(
             unique: true,
             trim: true,
         },
+        description: {
+            type: String,
+            trim: true,
+        },
         isFixed: {
             type: Boolean,
             default: true,
@@ -27,7 +31,9 @@ const listSchema = new Schema(
     },
 );
 
-listSchema.plugin(uniqueValidator);
+listSchema.plugin(uniqueValidator, {
+    message: 'A list with the same name already exists.',
+});
 
 const List = mongoose.model('List', listSchema);
 

@@ -5,9 +5,11 @@ import {
   Container,
   Box,
   List,
+  ListItem,
   Divider,
   Backdrop,
   CircularProgress,
+  Button,
 } from '@material-ui/core';
 import ArtistInput from './components/ArtistInput';
 import ArtistResultListItem from './components/ArtistResultListItem';
@@ -32,6 +34,8 @@ const messageTypes = {
 const App = props => {
   const { classes } = props;
   const [lists, setLists] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [activeGenre, setActiveGenre] = useState('');
   const [activeArtist, setActiveArtist] = useState({});
   const [artistResults, setArtistResults] = useState([]);
   const [activeAlbum, setActiveAlbum] = useState({});
@@ -44,10 +48,10 @@ const App = props => {
 
   useEffect(() => {
     loadListItems();
+    loadGenres();
   }, []);
 
   useEffect(() => {
-    // setArtistResults([]);
     fetchArtistAlbums();
     setArtistQuery('');
   }, [activeArtist]);
@@ -55,7 +59,6 @@ const App = props => {
   useEffect(() => {
     setAlbums([]);
     addActiveToList(getDefaultListId());
-    // Way to handle when cleared / empty?
   }, [activeAlbum]);
 
   useEffect(() => {
@@ -78,12 +81,22 @@ const App = props => {
         })
       )
       .catch(error => {
-        console.log(error);
+        handleError(error);
       })
       .finally(() => {
         setLoading(false);
       });
   };
+
+  const loadGenres = () => {
+    axios.get(`${apiBaseUrl}/items/genres`)
+      .then(response => {
+        setGenres(response.data);
+      })
+      .catch(error => {
+        handleError(error);
+      });
+  }
 
   const getDefaultListId = () => {
     const defaultList = lists.find(list => list.isDefault);
@@ -97,9 +110,14 @@ const App = props => {
       .delete(deleteItemUrl)
       .then(response => {
         loadListItems();
+        loadGenres();
+        setMessage({
+          message: 'Item deleted successfully!',
+          type: messageTypes.success,
+        });
       })
       .catch(error => {
-        console.log(error);
+        handleError(error);
         setLoading(false);
       });
   };
@@ -111,9 +129,14 @@ const App = props => {
       .put(updateItemUrl, { list: listId })
       .then(response => {
         loadListItems();
+        loadGenres();
+        setMessage({
+          message: 'Item updated successfully!',
+          type: messageTypes.success,
+        });
       })
       .catch(error => {
-        console.log(error);
+        handleError(error);
         setLoading(false);
       });
   };
@@ -130,7 +153,7 @@ const App = props => {
         setArtistResults(response.data);
       })
       .catch(error => {
-        console.log(error);
+        handleError(error);
       });
   };
 
@@ -146,7 +169,7 @@ const App = props => {
         setAlbums(response.data);
       })
       .catch(error => {
-        console.log(error);
+        handleError(error);
       });
   };
 
@@ -204,24 +227,41 @@ const App = props => {
         setActiveArtist({});
         setActiveAlbum({});
         loadListItems();
+        loadGenres();
+        setMessage({
+          message: 'Item added successfully!',
+          type: messageTypes.success,
+        });
       })
       .catch(error => {
-        handleError(error.response.data);
+        handleError(error);
       })
       .finally(() => setLoading(false));
   };
 
-  const handleError = data => {
-    if (data.name === 'ValidationError') {
-      const messages = Object.values(data.errors).map(error => {
-        return error.message;
-      });
-      messages.push('moi moi');
-      const message = {
-        message: messages,
+  const handleError = error => {
+    if (error.response) {
+      console.log(error.response);
+      if (error.response.data.name === 'ValidationError') {
+        const messages = Object.values(error.response.data.errors).map(err => {
+          return err.message;
+        });
+        setMessage({
+          message: messages,
+          type: messageTypes.error,
+        });
+      } else {
+        setMessage({
+          message: error.response.statusText,
+          type: messageTypes.error,
+        });
+      }
+    } else {
+      // Other error, show generic error message
+      setMessage({
+        message: error.message,
         type: messageTypes.error,
-      };
-      setMessage(message);
+      });
     }
   };
 
@@ -241,6 +281,7 @@ const App = props => {
           key={list._id}
           list={list}
           listActions={listActions}
+          activeGenre={activeGenre}
           onMoveItem={moveItemToList}
           onDeleteItem={deleteItem}
         />
@@ -259,6 +300,27 @@ const App = props => {
         <Divider component="li" />
       </React.Fragment>
     ));
+    return <List>{elements}</List>;
+  };
+
+  const setGenreFilter = genre => {
+    if (genre === activeGenre) {
+      setActiveGenre('');
+    } else {
+      setActiveGenre(genre);
+    }
+  };
+
+  const getGenreSelector = () => {
+    const elements = genres.map(genre => {
+      const isActive = genre === activeGenre;
+      const variant = isActive ? 'contained' : 'outlined';
+      return (
+        <ListItem key={genre}>
+          <Button color="primary" variant={variant} onClick={() => setGenreFilter(genre)}>{genre}</Button>
+        </ListItem>
+      );
+    });
     return <List>{elements}</List>;
   };
 
@@ -288,6 +350,7 @@ const App = props => {
         </Box>
         {getListContent()}
       </Box>
+      {getGenreSelector()}
       <Message message={message} onClear={clearMessage}></Message>
     </Container>
   );

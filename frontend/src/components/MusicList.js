@@ -13,10 +13,14 @@ const styles = theme => ({
     textAlign: 'center',
     marginBottom: theme.spacing(1.5),
   },
+  listDescription: {
+    textAlign: 'center',
+    marginBottom: theme.spacing(1.5),
+  },
 });
 
 const MusicList = props => {
-  const { list, listActions, onMoveItem, onDeleteItem, classes } = props;
+  const { list, classes, ...childProps } = props;
 
   const getContent = () => {
     if (list.items.length) {
@@ -25,9 +29,7 @@ const MusicList = props => {
           className={classes.list}
           key={item._id}
           item={item}
-          listActions={listActions}
-          onMoveItem={onMoveItem}
-          onDeleteItem={onDeleteItem}
+          {...childProps}
         />
       ));
     }
@@ -39,6 +41,7 @@ const MusicList = props => {
       <Typography variant="h3" className={classes.listHeading}>
         {list.title}
       </Typography>
+      <Typography variant="subtitle2" className={classes.listDescription}>{list.description}</Typography>
       {getContent()}
     </Box>
   );
@@ -47,7 +50,9 @@ const MusicList = props => {
 MusicList.propTypes = {
   list: PropTypes.object,
   listActions: PropTypes.array,
+  activeGenre: PropTypes.string,
   onMoveItem: PropTypes.func,
+  onDeleteItem: PropTypes.func,
 };
 
 export default withStyles(styles)(MusicList);

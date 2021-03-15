@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
 });
 
 // Get item by ID
-router.get('/:id', (req, res) => {
+router.get('/item/:id', (req, res) => {
     Item.findById(req.params.id)
         .then(item => res.json(item))
         .catch(err => res.status(400).json(err));
@@ -70,6 +70,13 @@ router.put('/update/:id', (req, res) => {
 router.delete('/delete/:id', (req, res) => {
     Item.deleteOne({ _id: req.params.id })
         .then(() => res.status(200).send('Item deleted.'))
+        .catch(err => res.status(400).json(err));
+});
+
+// Get all artist genres
+router.get('/genres', (req, res) => {
+    Item.distinct('artist.genres')
+        .then(items => res.json(items))
         .catch(err => res.status(400).json(err));
 });
 

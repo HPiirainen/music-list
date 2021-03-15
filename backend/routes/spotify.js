@@ -9,6 +9,31 @@ router.use(async (req, res, next) => {
     next();
 });
 
+// Search artists and albums
+router.get('/search/:q', async (req, res) => {
+    const searchParams = {
+        market: 'FI',
+        limit: 10,
+    };
+    try {
+        const response = await spotifyApi
+            .search(
+                req.params.q,
+                ['artist', 'album'],
+                searchParams
+            )
+            .then(data => {
+                if (data.statusCode !== 200) {
+                    return res.status(data.statusCode).send(data.body.message);
+                }
+                return data.body;
+            });
+        return res.status(200).send(response);
+    } catch (err) {
+        return res.status(400).json(err)
+    }
+});
+
 // Search artists
 router.get('/artist/:q', async (req, res) => {
     const searchParams = { limit: 10 };
@@ -19,7 +44,7 @@ router.get('/artist/:q', async (req, res) => {
                 searchParams,
             )
             .then(data => {
-                if ( data.statusCode !== 200) {
+                if (data.statusCode !== 200) {
                     return res.status(data.statusCode).send(data.body.message);
                 }
                 return data.body.artists.items;

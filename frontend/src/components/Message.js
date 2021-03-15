@@ -5,6 +5,14 @@ import { Alert } from '@material-ui/lab';
 
 const Message = props => {
     const { message, onClear, duration } = props;
+
+    const onClose = (event, reason) => {
+        if ( reason === 'clickaway' ) {
+            return;
+        }
+        onClear();
+    };
+
     if ('message' in message) {
         let content = message.message;
         if (Array.isArray(content)) {
@@ -15,9 +23,11 @@ const Message = props => {
                 open={true}
                 anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
                 autoHideDuration={duration}
-                onClose={onClear}
+                onClose={onClose}
             >
-                <Alert severity={message.type} variant="filled">{content}</Alert>
+                <Alert severity={message.type} variant="filled">
+                    {content}
+                </Alert>
             </Snackbar>
         );
     }

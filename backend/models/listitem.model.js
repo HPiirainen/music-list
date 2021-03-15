@@ -18,7 +18,6 @@ const listItemSchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: 'List',
             required: true,
-            // populate: ?
         },
         artist: {
             type: Artist,
