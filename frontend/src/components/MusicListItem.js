@@ -41,12 +41,12 @@ const styles = theme => ({
 });
 
 const MusicListItem = props => {
-  const { item, listActions, activeGenre, onDeleteItem, onMoveItem, classes } = props;
+  const { item, listActions, activeGenres, onDeleteItem, onMoveItem, classes } = props;
   const [selectedList, setSelectedList] = useState(null);
   const [listDialogOpen, setListDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  if (activeGenre.length && ! item.artist.genres.includes(activeGenre)) {
+  if (activeGenres.length && ! item.artist.genres.some(g => activeGenres.includes(g))) {
     return null;
   }
 
@@ -209,7 +209,7 @@ const MusicListItem = props => {
 MusicListItem.propTypes = {
   item: PropTypes.object,
   listActions: PropTypes.array,
-  activeGenre: PropTypes.string,
+  activeGenres: PropTypes.array,
   onDeleteItem: PropTypes.func,
   onMoveItem: PropTypes.func,
 };

@@ -11,6 +11,8 @@ import {
   CircularProgress,
   Button,
 } from '@material-ui/core';
+import TopBar from './components/TopBar';
+import GenreFilter from './components/GenreFilter';
 import ArtistInput from './components/ArtistInput';
 import ArtistResultListItem from './components/ArtistResultListItem';
 import ActiveArtist from './components/ActiveArtist';
@@ -35,7 +37,7 @@ const App = props => {
   const { classes } = props;
   const [lists, setLists] = useState([]);
   const [genres, setGenres] = useState([]);
-  const [activeGenre, setActiveGenre] = useState('');
+  const [activeGenres, setActiveGenres] = useState([]);
   const [activeArtist, setActiveArtist] = useState({});
   const [artistResults, setArtistResults] = useState([]);
   const [activeAlbum, setActiveAlbum] = useState({});
@@ -239,6 +241,10 @@ const App = props => {
       .finally(() => setLoading(false));
   };
 
+  const onSetGenres = (genres) => {
+    setActiveGenres(genres);
+  }
+
   const handleError = error => {
     if (error.response) {
       console.log(error.response);
@@ -281,7 +287,7 @@ const App = props => {
           key={list._id}
           list={list}
           listActions={listActions}
-          activeGenre={activeGenre}
+          activeGenres={activeGenres}
           onMoveItem={moveItemToList}
           onDeleteItem={deleteItem}
         />
@@ -303,56 +309,39 @@ const App = props => {
     return <List>{elements}</List>;
   };
 
-  const setGenreFilter = genre => {
-    if (genre === activeGenre) {
-      setActiveGenre('');
-    } else {
-      setActiveGenre(genre);
-    }
-  };
-
-  const getGenreSelector = () => {
-    const elements = genres.map(genre => {
-      const isActive = genre === activeGenre;
-      const variant = isActive ? 'contained' : 'outlined';
-      return (
-        <ListItem key={genre}>
-          <Button color="primary" variant={variant} onClick={() => setGenreFilter(genre)}>{genre}</Button>
-        </ListItem>
-      );
-    });
-    return <List>{elements}</List>;
-  };
-
   return (
-    <Container maxWidth="sm" className="app">
-      <Backdrop className={classes.backdrop} open={loading}>
-        <CircularProgress color="inherit" disableShrink />
-      </Backdrop>
-      <Box my={4}>
-        <ArtistInput
-          value={artistQuery}
-          showInput={isArtistInputVisible}
-          onInputChange={e => setArtistQuery(e.target.value)}
-        />
-        {getArtistContent()}
-        <ActiveArtist
-          artist={activeArtist}
-          onDismiss={() => setActiveArtist({})}
-          onAdd={addActiveToList}
-        />
-        <Box my={2}>
-          <AlbumInput
-            albums={albums}
-            showInput={isAlbumInputVisible}
-            onSelectAlbum={setAlbum}
+    <div>
+      <TopBar appTitle="Musiqueue">
+        <GenreFilter genres={genres} activeGenres={activeGenres} genreSetter={onSetGenres} />
+      </TopBar>
+      <Container maxWidth="sm" className="app">
+        <Backdrop className={classes.backdrop} open={loading}>
+          <CircularProgress color="inherit" disableShrink />
+        </Backdrop>
+        <Box my={4}>
+          <ArtistInput
+            value={artistQuery}
+            showInput={isArtistInputVisible}
+            onInputChange={e => setArtistQuery(e.target.value)}
           />
+          {getArtistContent()}
+          <ActiveArtist
+            artist={activeArtist}
+            onDismiss={() => setActiveArtist({})}
+            onAdd={addActiveToList}
+          />
+          <Box my={2}>
+            <AlbumInput
+              albums={albums}
+              showInput={isAlbumInputVisible}
+              onSelectAlbum={setAlbum}
+            />
+          </Box>
+          {getListContent()}
         </Box>
-        {getListContent()}
-      </Box>
-      {getGenreSelector()}
-      <Message message={message} onClear={clearMessage}></Message>
-    </Container>
+        <Message message={message} onClear={clearMessage}></Message>
+      </Container>
+    </div>
   );
 };
 

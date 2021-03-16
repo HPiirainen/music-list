@@ -50,7 +50,7 @@ const MusicList = props => {
 MusicList.propTypes = {
   list: PropTypes.object,
   listActions: PropTypes.array,
-  activeGenre: PropTypes.string,
+  activeGenres: PropTypes.array,
   onMoveItem: PropTypes.func,
   onDeleteItem: PropTypes.func,
 };
