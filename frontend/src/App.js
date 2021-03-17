@@ -187,7 +187,7 @@ const App = props => {
     const artist = {
       id: activeArtist.id,
       name: activeArtist.name,
-      url: activeArtist.href,
+      url: activeArtist.external_urls.spotify,
       images: activeArtist.images,
       genres: activeArtist.genres,
     };
@@ -198,7 +198,7 @@ const App = props => {
       album = {
         id: activeAlbum.id,
         name: activeAlbum.name,
-        url: activeAlbum.href,
+        url: activeAlbum.external_urls.spotify,
         images: activeAlbum.images,
         releaseDate: activeAlbum.release_date,
         tracks: activeAlbum.total_tracks,
