@@ -442,7 +442,7 @@ const App = props => {
                       <ArtistInput
                         value={artistQuery}
                         showInput={isArtistInputVisible}
-                        onInputChange={e => setArtistQuery(e.target.value)}
+                        onInputChange={text => setArtistQuery(text)}
                       />
                       <Box mt={4}>
                         {getArtistContent()}

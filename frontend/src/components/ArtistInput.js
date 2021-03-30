@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import useDebouncedSearch from './useDebouncedSearch';
 import { withStyles } from '@material-ui/core/styles';
 import {
   Fade,
@@ -18,12 +19,16 @@ const styles = theme => ({
 const ArtistInput = props => {
   const { classes, artistQuery, showInput, onInputChange } = props;
 
+  const useArtistSearch = () => useDebouncedSearch(text => onInputChange(text));
+
+  const { setInputText } = useArtistSearch();
+
   if (!showInput) {
     return '';
   }
 
   return (
-    <Fade in={true} timeout={{ enter: 0, exit: 2000 }}>
+    <Fade in={true} timeout={{ enter: 0, exit: 500 }}>
       <TextField
         id="artist-search"
         placeholder="Search artist"
@@ -31,7 +36,7 @@ const ArtistInput = props => {
         autoFocus
         fullWidth
         value={artistQuery}
-        onChange={onInputChange}
+        onChange={e => setInputText(e.target.value)}
         inputProps={{
           className: classes.input,
           autoComplete: 'off',
