@@ -74,6 +74,13 @@ const overrides = {
             fontSize: '3rem',
         },
     },
+    MuiTab: {
+        root: {
+            fontFamily: headingFontFamilies,
+            fontSize: '1.25rem',
+            textTransform: 'none',
+        },
+    },
 };
 
 const Theme = createMuiTheme({

@@ -6,7 +6,6 @@ import {
   AccordionSummary,
   AccordionDetails,
   AccordionActions,
-  Divider,
   Chip,
   Button,
   Dialog,
@@ -100,7 +99,7 @@ const MusicListItem = props => {
       <FormControlLabel
         value={list._id}
         key={list._id}
-        control={<Radio color="primary" />}
+        control={<Radio />}
         label={list.title}
       />
     ));
@@ -185,7 +184,7 @@ const MusicListItem = props => {
         </Dialog>
         <Dialog open={listDialogOpen}>
           <DialogTitle>Move to list</DialogTitle>
-          <DialogContent dividers>
+          <DialogContent>
             <RadioGroup onChange={e => setSelectedList(e.target.value)}>
               {getLists()}
             </RadioGroup>
