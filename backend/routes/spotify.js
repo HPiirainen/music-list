@@ -36,7 +36,7 @@ router.get('/search/:q', async (req, res) => {
 
 // Search artists
 router.get('/artist/:q', async (req, res) => {
-    const searchParams = { limit: 10 };
+    const searchParams = { limit: 20 };
     try {
         const response = await spotifyApi
             .searchArtists(

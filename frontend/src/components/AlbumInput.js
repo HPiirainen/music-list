@@ -1,7 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Autocomplete } from '@material-ui/lab';
-import { Box, TextField, Typography } from '@material-ui/core';
+import {
+  Box,
+  Fade,
+  TextField,
+  Typography
+} from '@material-ui/core';
 import AlbumIcon from '@material-ui/icons/Album';
 import AvatarImage from './AvatarImage';
 
@@ -33,25 +38,31 @@ const AlbumInput = props => {
   }
 
   if (Object.keys(albums).length === 0) {
-    return <Typography variant="subtitle1">No albums found.</Typography>;
+    return (
+      <Fade in={true} timeout={500}>
+        <Typography variant="body1">No albums found.</Typography>
+      </Fade>
+    );
   }
 
   return (
-    <Autocomplete
-      id="album-search"
-      options={albums}
-      getOptionLabel={album => album.name}
-      renderOption={album => renderAlbum(album)}
-      renderInput={params => (
-        <TextField
-          {...params}
-          label="Select album"
-          variant="outlined"
-          fullWidth
-        />
-      )}
-      onChange={(e, value) => onSelectAlbum(value)}
-    />
+    <Fade in={true} timeout={500}>
+      <Autocomplete
+        id="album-search"
+        options={albums}
+        getOptionLabel={album => album.name}
+        renderOption={album => renderAlbum(album)}
+        renderInput={params => (
+          <TextField
+            {...params}
+            label="Select album"
+            variant="outlined"
+            fullWidth
+          />
+        )}
+        onChange={(e, value) => onSelectAlbum(value)}
+      />
+    </Fade>
   );
 };
 

@@ -77,6 +77,7 @@ const App = props => {
   const [albums, setAlbums] = useState([]);
   const [artistQuery, setArtistQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingAlbums, setLoadingAlbums] = useState(false);
   const [message, setMessage] = useState({});
   const [activeTab, setActiveTab] = useState(null);
 
@@ -197,7 +198,7 @@ const App = props => {
       setArtistResults([]);
       return;
     }
-    const artistSearchUrl = `${apiBaseUrl}/spotify/artist/${artistQuery}`;
+    const artistSearchUrl = `${apiBaseUrl}/spotify/artist/${encodeURIComponent(artistQuery)}`;
     axios
       .get(artistSearchUrl)
       .then(response => {
@@ -213,6 +214,7 @@ const App = props => {
       // better way to do this?
       return;
     }
+    setLoadingAlbums(true);
     const albumSearchUrl = `${apiBaseUrl}/spotify/artist/${activeArtist.id}/albums`;
     axios
       .get(albumSearchUrl)
@@ -221,6 +223,9 @@ const App = props => {
       })
       .catch(error => {
         handleError(error);
+      })
+      .finally(() => {
+        setLoadingAlbums(false);
       });
   };
 
@@ -336,7 +341,7 @@ const App = props => {
 
   const isArtistInputVisible = !hasActiveArtist;
 
-  const isAlbumInputVisible = hasActiveArtist && !loading;
+  const isAlbumInputVisible = hasActiveArtist && !loadingAlbums;
 
   const getListContent = () => {
     if (!activeTab) {

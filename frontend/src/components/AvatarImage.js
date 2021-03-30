@@ -26,7 +26,7 @@ const AvatarImage = props => {
 };
 
 AvatarImage.defaultProps = {
-  maxWidth: 300,
+  maxWidth: 768,
   imageSize: 'small',
 };
 
