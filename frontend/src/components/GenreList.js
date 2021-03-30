@@ -17,7 +17,7 @@ const GenreList = props => {
   const getAndMore = () => {
     const andMore = genres.length - showN;
     if (andMore > 0) {
-      return <small> + {andMore} more</small>;
+      return <span> + {andMore} more</span>;
     }
     return '';
   };

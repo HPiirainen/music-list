@@ -64,10 +64,10 @@ const MusicListItem = props => {
             imageSize="medium"
             fallback={<AlbumIcon style={{ fontSize: 42 }} />}
           />
-          <Typography variant="subtitle1">
+          <Typography component="h4" variant="h6">
             {item.album.name} <small>({getYear(item.album.releaseDate)})</small>
           </Typography>
-          <Typography variant="subtitle2">
+          <Typography variant="body1">
             {item.album.tracks} tracks
           </Typography>
         </>
@@ -80,8 +80,6 @@ const MusicListItem = props => {
     if (hasAlbum()) {
       return (
         <Chip
-          variant="outlined"
-          size="small"
           color="primary"
           icon={<AlbumIcon />}
           label="Album"
@@ -90,8 +88,6 @@ const MusicListItem = props => {
     }
     return (
       <Chip
-        variant="outlined"
-        size="small"
         color="primary"
         icon={<MusicNoteIcon />}
         label="Artist"
@@ -104,7 +100,7 @@ const MusicListItem = props => {
       <FormControlLabel
         value={list._id}
         key={list._id}
-        control={<Radio />}
+        control={<Radio color="primary" />}
         label={list.title}
       />
     ));
@@ -124,7 +120,7 @@ const MusicListItem = props => {
   };
 
   return (
-    <Accordion TransitionProps={{ unmountOnExit: true }}>
+    <Accordion TransitionProps={{ unmountOnExit: true }} square>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <div className={classes.centered}>
           <AvatarImage
@@ -133,7 +129,7 @@ const MusicListItem = props => {
             imageSize="medium"
             fallback={<MusicNoteIcon style={{ fontSize: 42 }} />}
           />
-          <Typography variant="h5">{item.artist.name}</Typography>
+          <Typography component="h3" variant="h4">{item.artist.name}</Typography>
           <Tooltip title={getTooltip()} TransitionComponent={Zoom} arrow>
             {getItemType()}
           </Tooltip>
@@ -144,10 +140,10 @@ const MusicListItem = props => {
           {getAlbum()}
         </div>
       </AccordionDetails>
-      <Divider />
       <AccordionActions>
         <Button
           startIcon={<DeleteIcon />}
+          variant="contained"
           color="secondary"
           onClick={() => setDeleteDialogOpen(true)}
         >
@@ -155,6 +151,7 @@ const MusicListItem = props => {
         </Button>
         <Button
           startIcon={<PlaylistAddIcon />}
+          variant="contained"
           color="primary"
           onClick={() => setListDialogOpen(true)}
         >
@@ -173,10 +170,15 @@ const MusicListItem = props => {
               autoFocus
               onClick={() => setDeleteDialogOpen(false)}
               color="primary"
+              variant="contained"
             >
               Cancel
             </Button>
-            <Button onClick={() => onDeleteItem(item)} color="secondary">
+            <Button
+              onClick={() => onDeleteItem(item)}
+              color="secondary"
+              variant="contained"
+            >
               Delete
             </Button>
           </DialogActions>
@@ -189,13 +191,18 @@ const MusicListItem = props => {
             </RadioGroup>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setListDialogOpen(false)} color="secondary">
+            <Button
+              onClick={() => setListDialogOpen(false)}
+              color="secondary"
+              variant="contained"
+            >
               Cancel
             </Button>
             <Button
               disabled={selectedList === null}
               onClick={() => onMoveItem(item, selectedList)}
               color="primary"
+              variant="contained"
             >
               Ok
             </Button>

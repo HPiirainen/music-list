@@ -9,9 +9,8 @@ const styles = theme => ({
     height: theme.spacing(25),
   },
   medium: {
-    width: theme.spacing(8),
-    height: theme.spacing(8),
-    marginRight: theme.spacing(2),
+    width: theme.spacing(10),
+    height: theme.spacing(10),
   },
 });
 

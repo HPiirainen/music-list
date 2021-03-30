@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Autocomplete } from '@material-ui/lab';
-import { TextField, Typography } from '@material-ui/core';
+import { Box, TextField, Typography } from '@material-ui/core';
 import AlbumIcon from '@material-ui/icons/Album';
 import AvatarImage from './AvatarImage';
 
@@ -19,9 +19,11 @@ const AlbumInput = props => {
           fallback={<AlbumIcon style={{ fontSize: 42 }} />}
           imageSize="medium"
         />
-        <Typography variant="subtitle1">
-          {album.name} <small>({getYear(album.release_date)})</small>
-        </Typography>
+        <Box ml={2}>
+          <Typography variant="subtitle1">
+            {album.name} <small>({getYear(album.release_date)})</small>
+          </Typography>
+        </Box>
       </>
     );
   };

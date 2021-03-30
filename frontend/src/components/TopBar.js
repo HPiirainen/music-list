@@ -10,13 +10,14 @@ import {
     Typography
 } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
+import ChevronRight from '@material-ui/icons/ChevronRight';
 
 const styles = theme => ({
     menuButton: {
         marginLeft: 'auto',
     },
     drawerContent: {
-        padding: theme.spacing(3, 2),
+        padding: theme.spacing(1.5),
         maxWidth: 350,
         minWidth: 250,
     },
@@ -32,13 +33,13 @@ const TopBar = props => {
     }
 
     return (
-        <AppBar position="sticky">
+        <AppBar position="sticky" color="secondary">
             <Toolbar>
-                <Typography variant="h6">{appTitle}</Typography>
+                <Typography component="h1" variant="h5">{appTitle}</Typography>
                 <IconButton
                     className={classes.menuButton}
                     color="inherit"
-                    aria-label="menu"
+                    aria-label="Open filters"
                     onClick={() => toggleDrawer(true)}
                 >
                     <MenuIcon />
@@ -47,9 +48,16 @@ const TopBar = props => {
                     className={classes.drawer}
                     anchor="right"
                     open={drawerOpen}
-                    onClose={() => toggleDrawer(false)}
+                    variant="persistent"
                 >
                     <Box className={classes.drawerContent}>
+                        <IconButton
+                            color="inherit"
+                            aria-label="Close filters"
+                            onClick={() => toggleDrawer(false)}
+                        >
+                            <ChevronRight />
+                        </IconButton>
                         { props.children }
                     </Box>
                 </Drawer>

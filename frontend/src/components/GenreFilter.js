@@ -3,12 +3,7 @@ import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import {
     List,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
     ListSubheader,
-    Switch,
-    Typography,
 } from '@material-ui/core';
 import ListSwitch from './ListSwitch';
 
@@ -65,20 +60,22 @@ const GenreFilter = props => {
         );
     });
 
+    if (genres.length === 0) {
+        return null;
+    }
+
     return (
-        <>
-            <List subheader={<ListSubheader disableSticky>Genres</ListSubheader>}>
-                <ListSwitch
-                    key="select-all"
-                    label="Show all"
-                    identifier="select-all"
-                    isChecked={allSelected}
-                    onSwitch={toggleSelectAll}
-                />
-                { listItems }
-            </List>
-        </>
-    )
+        <List subheader={<ListSubheader disableSticky>Genres</ListSubheader>}>
+            <ListSwitch
+                key="select-all"
+                label="Show all"
+                identifier="select-all"
+                isChecked={allSelected}
+                onSwitch={toggleSelectAll}
+            />
+            { listItems }
+        </List>
+    );
 }
 
 GenreFilter.propTypes = {

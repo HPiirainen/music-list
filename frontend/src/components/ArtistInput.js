@@ -1,23 +1,43 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { TextField } from '@material-ui/core';
+import { withStyles } from '@material-ui/core/styles';
+import {
+  Fade,
+  TextField,
+} from '@material-ui/core';
+
+const styles = theme => ({
+  input: {
+    textAlign: 'center',
+    fontSize: 60,
+    fontFamily: theme.typography.headingFontFamily,
+    color: theme.palette.primary.main,
+  },
+});
 
 const ArtistInput = props => {
-  const { artistQuery, showInput, onInputChange } = props;
+  const { classes, artistQuery, showInput, onInputChange } = props;
 
   if (!showInput) {
     return '';
   }
 
   return (
-    <TextField
-      id="artist-search"
-      label="Search for artist"
-      variant="outlined"
-      fullWidth
-      value={artistQuery}
-      onChange={onInputChange}
-    />
+    <Fade in={true} timeout={{ enter: 0, exit: 2000 }}>
+      <TextField
+        id="artist-search"
+        placeholder="Search artist"
+        color="primary"
+        autoFocus
+        fullWidth
+        value={artistQuery}
+        onChange={onInputChange}
+        inputProps={{
+          className: classes.input,
+          autoComplete: 'off',
+        }}
+      />
+    </Fade>
   );
 };
 
@@ -27,4 +47,4 @@ ArtistInput.propTypes = {
   onInputChange: PropTypes.func,
 };
 
-export default ArtistInput;
+export default withStyles(styles)(ArtistInput);

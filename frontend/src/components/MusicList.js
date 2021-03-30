@@ -38,10 +38,10 @@ const MusicList = props => {
 
   return (
     <Box my={2}>
-      <Typography variant="h3" className={classes.listHeading}>
+      <Typography variant="h2" className={classes.listHeading}>
         {list.title}
       </Typography>
-      <Typography variant="subtitle2" className={classes.listDescription}>{list.description}</Typography>
+      <Typography variant="body1" className={classes.listDescription}>{list.description}</Typography>
       {getContent()}
     </Box>
   );

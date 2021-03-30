@@ -1,10 +1,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
 import { Snackbar } from '@material-ui/core';
-import { Alert } from '@material-ui/lab';
+import { Alert, AlertTitle } from '@material-ui/lab';
+
+const styles = theme => ({
+    title: {
+        textTransform: 'capitalize',
+    },
+    list: {
+        padding: theme.spacing(0, 0, 0, 2),
+        margin: 0,
+    },
+    alert: {
+        minWidth: 350,
+    },
+});
 
 const Message = props => {
-    const { message, onClear, duration } = props;
+    const { classes, message, onClear, duration } = props;
 
     const onClose = (event, reason) => {
         if ( reason === 'clickaway' ) {
@@ -16,7 +30,9 @@ const Message = props => {
     if ('message' in message) {
         let content = message.message;
         if (Array.isArray(content)) {
-            content = content.map(msg => <>{msg}<br/></>);
+            console.log(content);
+            content = content.map(msg => <li>{msg}</li>);
+            content = <ul className={classes.list}>{content}</ul>;
         }
         return (
             <Snackbar
@@ -25,7 +41,8 @@ const Message = props => {
                 autoHideDuration={duration}
                 onClose={onClose}
             >
-                <Alert severity={message.type} variant="filled">
+                <Alert severity={message.type} variant="filled" className={classes.alert}>
+                    <AlertTitle className={classes.title}>{message.type}</AlertTitle>
                     {content}
                 </Alert>
             </Snackbar>
@@ -44,4 +61,4 @@ Message.defaultProps = {
     duration: 10000,
 };
 
-export default Message;
+export default withStyles(styles)(Message);

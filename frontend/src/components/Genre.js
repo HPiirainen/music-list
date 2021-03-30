@@ -20,7 +20,6 @@ const Genre = props => {
       key={genre}
       label={genre}
       size="small"
-      variant="outlined"
       color="primary"
       component="span"
       className={classes.chip}

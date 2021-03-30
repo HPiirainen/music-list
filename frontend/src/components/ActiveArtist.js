@@ -2,10 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import {
-  Card,
-  CardContent,
-  CardActions,
   Button,
+  Card,
+  CardActions,
+  CardContent,
+  Fade,
   Typography,
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -34,33 +35,37 @@ const ActiveArtist = props => {
   }
 
   return (
-    <Card>
-      <CardContent className={classes.centered}>
-        <AvatarImage
-          images={artist.images}
-          alt={artist.name}
-          fallback={<MusicNoteIcon style={{ fontSize: 120 }} />}
-          imageSize="large"
-        />
-        <Typography variant="h2">{artist.name}</Typography>
-      </CardContent>
-      <CardActions className={classes.spacedEvenly}>
-        <Button
-          color="primary"
-          startIcon={<PlaylistAddIcon />}
-          onClick={() => onAdd()}
-        >
-          Add to queue
-        </Button>
-        <Button
-          color="secondary"
-          endIcon={<DeleteIcon />}
-          onClick={() => onDismiss()}
-        >
-          Dismiss
-        </Button>
-      </CardActions>
-    </Card>
+    <Fade in={true} timeout={1000}>
+      <Card>
+        <CardContent className={classes.centered}>
+          <AvatarImage
+            images={artist.images}
+            alt={artist.name}
+            fallback={<MusicNoteIcon style={{ fontSize: 120 }} />}
+            imageSize="large"
+          />
+          <Typography variant="h2">{artist.name}</Typography>
+        </CardContent>
+        <CardActions className={classes.spacedEvenly}>
+          <Button
+            color="primary"
+            variant="contained"
+            startIcon={<PlaylistAddIcon />}
+            onClick={() => onAdd()}
+          >
+            Add to queue
+          </Button>
+          <Button
+            color="secondary"
+            variant="contained"
+            endIcon={<DeleteIcon />}
+            onClick={() => onDismiss()}
+          >
+            Dismiss
+          </Button>
+        </CardActions>
+      </Card>
+    </Fade>
   );
 };
 
