@@ -76,6 +76,7 @@ const App = props => {
   const [activeAlbum, setActiveAlbum] = useState({});
   const [albums, setAlbums] = useState([]);
   const [artistQuery, setArtistQuery] = useState('');
+  const [relatedArtists, setRelatedArtists] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingAlbums, setLoadingAlbums] = useState(false);
   const [message, setMessage] = useState({});
@@ -191,6 +192,33 @@ const App = props => {
         handleError(error);
         setLoading(false);
       });
+  };
+
+  const getRelatedArtists = (artistId) => {
+    const relatedArtistsUrl = `${apiBaseUrl}/spotify/artist/${artistId}/related`;
+    setLoading(true);
+    axios
+      .get(relatedArtistsUrl)
+      .then(response => {
+        if (response.data.length === 0) {
+          setMessage({
+            message: 'No related artists found.',
+            type: messageTypes.error,
+          });
+        } else {
+          setRelatedArtists(response.data);
+        }
+      })
+      .catch(error => {
+        handleError(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      })
+  };
+
+  const clearRelatedArtists = () => {
+    setRelatedArtists([]);
   };
 
   const fetchArtists = () => {
@@ -357,8 +385,11 @@ const App = props => {
             list={list}
             listActions={listActions}
             activeGenres={activeGenres}
+            relatedArtists={relatedArtists}
             onMoveItem={moveItemToList}
             onDeleteItem={deleteItem}
+            onGetRelated={getRelatedArtists}
+            onClearRelated={clearRelatedArtists}
           />
         </TabPanel>
       );
@@ -394,6 +425,7 @@ const App = props => {
         <ArtistResultListItem
           key={artist.id}
           artist={artist}
+          showGenres={true}
           onSelectArtist={setArtist}
         />
         <Divider component="li" />

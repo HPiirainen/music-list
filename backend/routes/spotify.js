@@ -76,7 +76,27 @@ router.get('/artist/:id/albums', async (req, res) => {
             });
         return res.status(200).send(response);
     } catch (err) {
-        return res.status(400).json(err)
+        return res.status(400).json(err);
+    }
+});
+
+// Get related artists
+router.get('/artist/:id/related', async (req, res) => {
+    try {
+        const max = 10;
+        const response = await spotifyApi
+            .getArtistRelatedArtists(
+                req.params.id
+            )
+            .then(data => {
+                if (data.statusCode !== 200) {
+                    return res.status(data.statusCode).send(data.body.message);
+                }
+                return data.body.artists.slice(0, max);
+            });
+        return res.status(200).send(response);
+    } catch (err) {
+        return res.status(400).json(err);
     }
 });
 

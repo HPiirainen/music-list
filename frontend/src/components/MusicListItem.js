@@ -6,18 +6,19 @@ import {
   AccordionSummary,
   AccordionDetails,
   AccordionActions,
-  Chip,
   Button,
+  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
-  RadioGroup,
-  Radio,
   FormControlLabel,
-  Typography,
+  List,
+  Radio,
+  RadioGroup,
   Tooltip,
+  Typography,
   Zoom,
 } from '@material-ui/core';
 import MusicNoteIcon from '@material-ui/icons/MusicNote';
@@ -25,7 +26,9 @@ import AlbumIcon from '@material-ui/icons/Album';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import DeleteIcon from '@material-ui/icons/Delete';
 import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd';
+import PeopleIcon from '@material-ui/icons/People';
 import AvatarImage from './AvatarImage';
+import ArtistResultListItem from './ArtistResultListItem';
 
 const styles = theme => ({
   centered: {
@@ -40,7 +43,7 @@ const styles = theme => ({
 });
 
 const MusicListItem = props => {
-  const { item, listActions, activeGenres, onDeleteItem, onMoveItem, classes } = props;
+  const { item, listActions, activeGenres, relatedArtists, onDeleteItem, onMoveItem, onGetRelated, onClearRelated, classes } = props;
   const [selectedList, setSelectedList] = useState(null);
   const [listDialogOpen, setListDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -118,6 +121,16 @@ const MusicListItem = props => {
     );
   };
 
+  const getRelatedContent = () => {
+    if (relatedArtists.length === 0) {
+      return null;
+    }
+    const related = relatedArtists.map(artist => {
+      return <ArtistResultListItem key={artist.id} artist={artist} showGenres={false} />;
+    })
+    return <List>{related}</List>;
+  }
+
   return (
     <Accordion TransitionProps={{ unmountOnExit: true }} square>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -141,6 +154,14 @@ const MusicListItem = props => {
       </AccordionDetails>
       <AccordionActions>
         <Button
+          startIcon={<PeopleIcon />}
+          variant="contained"
+          color="primary"
+          onClick={() => onGetRelated(item.artist.id)}
+        >
+          Related artists
+        </Button>
+        <Button
           startIcon={<DeleteIcon />}
           variant="contained"
           color="secondary"
@@ -156,6 +177,14 @@ const MusicListItem = props => {
         >
           Move to list
         </Button>
+        <Dialog open={relatedArtists.length > 0} onClose={onClearRelated}>
+          <DialogTitle>Related artists</DialogTitle>
+          <DialogContent>
+            <DialogContent>
+              {getRelatedContent()}
+            </DialogContent>
+          </DialogContent>
+        </Dialog>
         <Dialog open={deleteDialogOpen}>
           <DialogTitle>Permanently remove item?</DialogTitle>
           <DialogContent>
@@ -216,8 +245,11 @@ MusicListItem.propTypes = {
   item: PropTypes.object,
   listActions: PropTypes.array,
   activeGenres: PropTypes.array,
+  relatedArtists: PropTypes.array,
   onDeleteItem: PropTypes.func,
   onMoveItem: PropTypes.func,
+  onGetRelated: PropTypes.func,
+  onClearRelated: PropTypes.func,
 };
 
 export default withStyles(styles)(MusicListItem);
