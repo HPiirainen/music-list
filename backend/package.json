@@ -2,25 +2,33 @@
   "name": "music-list-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/server.ts",
   "dependencies": {
     "bcrypt": "^5.0.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "express-jwt": "^6.0.0",
+    "express-jwt": "^8.0.0",
     "jsonwebtoken": "^8.5.1",
+    "mongo-dot-notation": "^3.1.0",
     "mongodb": "^3.6.4",
-    "mongoose": "^5.12.0",
-    "mongoose-unique-validator": "^2.0.3",
-    "node-dotify": "^1.1.0",
+    "mongoose": "^6.8.3",
+    "mongoose-unique-validator": "^3.1.0",
     "nodemon": "^2.0.7",
-    "spotify-web-api-node": "^5.0.2"
+    "spotify-web-api-node": "^5.0.2",
+    "typescript": "^4.9.4"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.15",
+    "@types/mongoose-unique-validator": "^1.0.6",
+    "@types/node": "^18.11.18",
+    "ts-node": "^10.9.1"
+  },
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "nodemon src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Hermanni Piirainen",

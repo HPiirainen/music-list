@@ -22,6 +22,8 @@ import {
 } from '@material-ui/lab';
 import Search from '@material-ui/icons/Search';
 import Close from '@material-ui/icons/Close';
+// import { FixedSizeList } from 'react-window';
+// import { InfiniteLoader } from 'react-window-infinite-loader';
 import TopBar from './components/TopBar';
 import Login from './components/Login';
 import GenreFilter from './components/GenreFilter';

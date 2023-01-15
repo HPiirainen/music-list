@@ -31,7 +31,7 @@ const Message = props => {
         let content = message.message;
         if (Array.isArray(content)) {
             console.log(content);
-            content = content.map(msg => <li>{msg}</li>);
+            content = content.map((msg, index) => <li key={index}>{msg}</li>);
             content = <ul className={classes.list}>{content}</ul>;
         }
         return (

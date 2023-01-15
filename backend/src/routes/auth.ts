@@ -1,14 +1,22 @@
-const router = require('express').Router();
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const User = require('../models/user.model');
-const createJWT = require('../utils/auth');
+import { Router } from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import User, { IUser } from '../models/user.model';
+import createJWT from '../utils/auth';
+
+const router = Router();
+
+interface Error {
+    email: string | null;
+    password: string | null;
+    message: string | null;
+}
 
 router.post('/signup', (req, res) => {
     const { name, email, password } = req.body;
 
     User.findOne({ email: email })
-        .then(existingUser => {
+        .then((existingUser) => {
             if (existingUser) {
                 return res.status(422).send('Email already exists');
             } else {
@@ -42,7 +50,7 @@ router.post('/signup', (req, res) => {
 
 router.post('/signin', (req, res) => {
     const { email, password } = req.body;
-    const errors = {
+    const errors: Error = {
         email: null,
         password: null,
         message: null,
@@ -73,6 +81,8 @@ router.post('/signin', (req, res) => {
                 }
             }
 
+            console.log(user);
+
             const accessToken = createJWT(
                 user.email,
                 user._id,
@@ -81,7 +91,7 @@ router.post('/signin', (req, res) => {
 
             jwt.verify(
                 accessToken,
-                process.env.TOKEN_SECRET,
+                process.env.TOKEN_SECRET || '',
                 (err, decoded) => {
                     if (err) {
                         return res.status(500).json(err);
@@ -99,4 +109,6 @@ router.post('/signin', (req, res) => {
         });
 });
 
-module.exports = router;
+// TODO: Change password route.
+
+export default router;

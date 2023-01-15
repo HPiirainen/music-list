@@ -1,9 +1,15 @@
-const mongoose = require('mongoose');
-const uniqueValidator = require('mongoose-unique-validator');
+import mongoose, { Schema, Types } from 'mongoose';
+import uniqueValidator from 'mongoose-unique-validator';
 
-const { Schema } = mongoose;
+export interface IList {
+    _id: Types.ObjectId;
+    title: string;
+    description?: string;
+    isFixed: boolean;
+    isDefault: boolean;
+}
 
-const listSchema = new Schema(
+const listSchema: Schema<IList> = new Schema<IList>(
     // Schema keys
     {
         title: {
@@ -35,6 +41,6 @@ listSchema.plugin(uniqueValidator, {
     message: 'A list with the same name already exists.',
 });
 
-const List = mongoose.model('List', listSchema);
+const List = mongoose.model<IList>('List', listSchema);
 
-module.exports = List;
+export default List;

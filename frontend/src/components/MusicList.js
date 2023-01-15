@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import { Box, Typography } from '@material-ui/core';
@@ -21,6 +21,17 @@ const styles = theme => ({
 
 const MusicList = props => {
   const { list, classes, ...childProps } = props;
+
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [isNextPageLoading, setIsNextPageLoading] = useState(false);
+  const [items, setItems] = useState(list.items);
+
+  const loadMore = () => {
+    // TODO:
+    // Infinite loader,
+    // load the active list only at first,
+    // load other lists when tab is opened.
+  }
 
   const getContent = () => {
     if (list.items.length) {

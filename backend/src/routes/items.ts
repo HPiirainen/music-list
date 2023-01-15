@@ -1,14 +1,26 @@
-const router = require('express').Router();
-const dotify = require('node-dotify');
-const Item = require('../models/listitem.model');
-const Artist = require('../models/artist.model');
-const Album = require('../models/album.model');
-const Image = require('../models/image.model');
+import { Router } from 'express';
+import { flatten } from 'mongo-dot-notation';
+import Item from '../models/listitem.model';
+import Artist from '../models/artist.model';
+import Album from '../models/album.model';
+import Image, { IImage } from '../models/image.model';
+
+const router = Router();
 
 // Get items
 router.get('/', (req, res) => {
+    let limit: number = 0;
+    let offset: number = 0;
+    if (typeof req.query.limit === 'string') {
+        limit = parseInt(req.query.limit);
+    }
+    if (typeof req.query.offset === 'string') {
+        offset = parseInt(req.query.offset);
+    }
     Item.find()
         .sort({ createdAt: 'asc' })
+        .skip(offset)
+        .limit(limit)
         .then(items => res.json(items))
         .catch(err => res.status(400).json(err));
 });
@@ -36,13 +48,13 @@ router.post('/create', (req, res) => {
         album,
     } = req.body;
 
-    artist.images = artist.images.map(image => new Image(image));
+    artist.images = artist.images.map((image: IImage) => new Image(image));
 
     // Create concatenated ID from artist and album to check for uniqueness
     let id = artist.id;
 
     if (album) {
-        album.images = album.images.map(image => new Image(image));
+        album.images = album.images.map((image: IImage) => new Image(image));
         id += album.id;
     }
 
@@ -60,7 +72,8 @@ router.post('/create', (req, res) => {
 
 // Update item
 router.put('/update/:id', (req, res) => {
-    const values = dotify(req.body);
+    // TODO: Test this changed flatten.
+    const values = flatten(req.body);
     Item.updateOne({ _id: req.params.id }, values )
         .then(() => res.status(200).send('Item updated.'))
         .catch(err => res.status(400).json(err));
@@ -80,4 +93,4 @@ router.get('/genres', (req, res) => {
         .catch(err => res.status(400).json(err));
 });
 
-module.exports = router;
+export default router;
