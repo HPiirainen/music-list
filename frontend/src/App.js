@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from './utils/axios';
 import Theme from './utils/theme';
-import { withStyles } from '@material-ui/core/styles';
-import { ThemeProvider } from '@material-ui/styles';
+import { withStyles, ThemeProvider } from '@material-ui/core/styles';
 import {
   Backdrop,
   Box,
@@ -15,11 +14,7 @@ import {
   List,
   Tab,
 } from '@material-ui/core';
-import {
-  TabContext,
-  TabList,
-  TabPanel,
-} from '@material-ui/lab';
+import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 import Search from '@material-ui/icons/Search';
 import Close from '@material-ui/icons/Close';
 // import { FixedSizeList } from 'react-window';
