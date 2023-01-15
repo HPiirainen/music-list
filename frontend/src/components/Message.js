@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import { Snackbar } from '@material-ui/core';
-import { Alert, AlertTitle } from '@material-ui/lab';
+import { withStyles } from '@mui/styles';
+import { Snackbar } from '@mui/material';
+import { Alert, AlertTitle } from '@mui/lab';
 
 const styles = theme => ({
     title: {

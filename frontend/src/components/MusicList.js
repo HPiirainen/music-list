@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
-import { Box, Typography } from '@material-ui/core';
+import { Box, Typography } from '@mui/material';
 import MusicListItem from './MusicListItem';
 
 const styles = theme => ({

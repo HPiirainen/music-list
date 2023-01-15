@@ -6,8 +6,8 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText
-} from '@material-ui/core';
-import MusicNoteIcon from '@material-ui/icons/MusicNote';
+} from '@mui/material';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import AvatarImage from './AvatarImage';
 import GenreList from './GenreList';
 

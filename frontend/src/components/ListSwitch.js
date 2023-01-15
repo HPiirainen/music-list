@@ -6,7 +6,7 @@ import {
     ListItemText,
     Switch,
     Typography
-} from '@material-ui/core';
+} from '@mui/material';
 
 const ListSwitch = props => {
     const { identifier, label, isChecked, onSwitch } = props;

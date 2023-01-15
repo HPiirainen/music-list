@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from './utils/axios';
 import Theme from './utils/theme';
-import { withStyles, ThemeProvider } from '@material-ui/core/styles';
+import { ThemeProvider, StyledEngineProvider, createTheme } from '@mui/material/styles';
+import { withStyles } from '@mui/styles';
 import {
   Backdrop,
   Box,
@@ -13,10 +14,10 @@ import {
   IconButton,
   List,
   Tab,
-} from '@material-ui/core';
-import { TabContext, TabList, TabPanel } from '@material-ui/lab';
-import Search from '@material-ui/icons/Search';
-import Close from '@material-ui/icons/Close';
+} from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import Search from '@mui/icons-material/Search';
+import Close from '@mui/icons-material/Close';
 // import { FixedSizeList } from 'react-window';
 // import { InfiniteLoader } from 'react-window-infinite-loader';
 import TopBar from './components/TopBar';
@@ -30,6 +31,8 @@ import MusicList from './components/MusicList';
 import Message from './components/Message';
 import messageTypes from './utils/message-types';
 import './utils/fonts';
+
+const theme = createTheme();
 
 const styles = theme => ({
   backdrop: {
@@ -454,7 +457,7 @@ const App = props => {
                 aria-label="Open search"
                 color="primary"
                 onClick={() => setSearchBackdropOpen(true)}
-              >
+                size="large">
                 <Search fontSize="large" />
               </IconButton>
             </Box>
@@ -468,7 +471,7 @@ const App = props => {
                     aria-label="Close search"
                     onClick={() => setSearchBackdropOpen(false)}
                     className={classes.closeButton}
-                  >
+                    size="large">
                     <Close fontSize="large" />
                   </IconButton>
                   <Container maxWidth="sm" className={classes.backdropContent}>
@@ -506,15 +509,17 @@ const App = props => {
   }
 
   return (
-    <ThemeProvider theme={Theme}>
-      <CssBaseline>
-        <TopBar appTitle="Musiqueue">
-          <GenreFilter genres={genres} activeGenres={activeGenres} genreSetter={onSetGenres} />
-        </TopBar>
-        { mainContent }
-        <Message message={message} onClear={clearMessage}></Message>
-      </CssBaseline>
-    </ThemeProvider>
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={Theme}>
+        <CssBaseline>
+          <TopBar appTitle="Musiqueue">
+            <GenreFilter genres={genres} activeGenres={activeGenres} genreSetter={onSetGenres} />
+          </TopBar>
+          { mainContent }
+          <Message message={message} onClear={clearMessage}></Message>
+        </CssBaseline>
+      </ThemeProvider>
+    </StyledEngineProvider>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 import {
   Accordion,
@@ -20,13 +20,13 @@ import {
   Tooltip,
   Typography,
   Zoom,
-} from '@material-ui/core';
-import MusicNoteIcon from '@material-ui/icons/MusicNote';
-import AlbumIcon from '@material-ui/icons/Album';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import DeleteIcon from '@material-ui/icons/Delete';
-import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd';
-import PeopleIcon from '@material-ui/icons/People';
+} from '@mui/material';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import AlbumIcon from '@mui/icons-material/Album';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import DeleteIcon from '@mui/icons-material/Delete';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
+import PeopleIcon from '@mui/icons-material/People';
 import AvatarImage from './AvatarImage';
 import ArtistResultListItem from './ArtistResultListItem';
 

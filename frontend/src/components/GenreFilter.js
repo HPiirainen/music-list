@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 import {
     List,
     ListSubheader,
-} from '@material-ui/core';
+} from '@mui/material';
 import ListSwitch from './ListSwitch';
 
 const styles = theme => ({

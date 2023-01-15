@@ -1,5 +1,5 @@
-import { createMuiTheme } from '@material-ui/core/styles';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import { createTheme, adaptV4Theme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 
 const colors = {
     black: '#100007',
@@ -19,72 +19,92 @@ const headingFontFamilies = [
 const globalStyles = {
 };
 
-const overrides = {
+const components = {
     // Set global styles
     MuiCssBaseline: {
-        '@global': globalStyles,
+        styleOverrides: {
+            '@global': globalStyles,
+        }
     },
     MuiAccordion: {
-        root: {
-            backgroundColor: colors.tamarind,
-            border: `1px solid ${fade(colors.yellow, .5)}`,
-            '&:before': {
-                display: 'none',
+        styleOverrides: {
+            root: {
+                backgroundColor: colors.tamarind,
+                border: `1px solid ${alpha(colors.yellow, .5)}`,
+                '&:before': {
+                    display: 'none',
+                },
             },
-        },
+        }
     },
     MuiAlert: {
-        filledSuccess: {
-            color: colors.black,
-        },
-        filledWarning: {
-            color: colors.black,
-        },
-        filledInfo: {
-            color: colors.black,
-        },
+        styleOverrides: {
+            filledSuccess: {
+                color: colors.black,
+            },
+            filledWarning: {
+                color: colors.black,
+            },
+            filledInfo: {
+                color: colors.black,
+            },
+        }
     },
     MuiBackdrop: {
-        root: {
-            backgroundColor: fade(colors.black, .75),
-        },
+        styleOverrides: {
+            root: {
+                backgroundColor: alpha(colors.black, .75),
+            },
+        }
     },
     MuiButton: {
-        label: {
-            fontWeight: 600,
-        },
+        styleOverrides: {
+            label: {
+                fontWeight: 600,
+            },
+        }
     },
     MuiCard: {
-        root: {
-            backgroundColor: colors.tamarind,
+        styleOverrides: {
+            root: {
+                backgroundColor: colors.tamarind,
+            }
         }
     },
     MuiChip: {
-        label: {
-            fontWeight: 600,
-        },
+        styleOverrides: {
+            label: {
+                fontWeight: 600,
+            },
+        }
     },
     MuiDialogContentText: {
-        root: {
-            color: colors.white,
-        },
+        styleOverrides: {
+            root: {
+                color: colors.white,
+            },
+        }
     },
     MuiSvgIcon: {
-        fontSizeLarge: {
-            fontSize: '3rem',
-        },
+        styleOverrides: {
+            fontSizeLarge: {
+                fontSize: '3rem',
+            },
+        }
     },
     MuiTab: {
-        root: {
-            fontFamily: headingFontFamilies,
-            fontSize: '1.25rem',
-            textTransform: 'none',
-        },
+        styleOverrides: {
+            root: {
+                fontFamily: headingFontFamilies,
+                fontSize: '1.25rem',
+                textTransform: 'none',
+            },
+        }
     },
 };
 
-const Theme = createMuiTheme({
-    overrides,
+const Theme = createTheme(adaptV4Theme({
+    components,
     typography: {
         fontFamily: [
             'Raleway',
@@ -121,7 +141,7 @@ const Theme = createMuiTheme({
     },
     palette: {
         custom: colors,
-        type: 'dark',
+        mode: 'dark',
         background: {
             paper: colors.tamarind,
             default: colors.black,
@@ -159,6 +179,6 @@ const Theme = createMuiTheme({
         },
         divider: 'rgba(255, 255, 255, .65)',
     }
-});
+}));
 
 export default Theme;

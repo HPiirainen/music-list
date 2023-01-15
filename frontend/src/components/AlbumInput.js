@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Autocomplete } from '@material-ui/lab';
+import { Autocomplete } from '@mui/lab';
 import {
   Box,
   Fade,
   TextField,
   Typography
-} from '@material-ui/core';
-import AlbumIcon from '@material-ui/icons/Album';
+} from '@mui/material';
+import AlbumIcon from '@mui/icons-material/Album';
 import AvatarImage from './AvatarImage';
 
 const AlbumInput = props => {

@@ -9,7 +9,7 @@ import {
     Paper,
     TextField,
     Typography,
-} from '@material-ui/core';
+} from '@mui/material';
 import messageTypes from '../utils/message-types';
 
 const Login = props => {

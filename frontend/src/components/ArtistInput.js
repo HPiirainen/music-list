@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import useDebouncedSearch from './useDebouncedSearch';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@mui/styles';
 import {
   Fade,
   TextField,
-} from '@material-ui/core';
+} from '@mui/material';
 
 const styles = theme => ({
   input: {

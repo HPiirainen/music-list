@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@mui/styles';
 import {
   Button,
   Card,
@@ -8,10 +8,10 @@ import {
   CardContent,
   Fade,
   Typography,
-} from '@material-ui/core';
-import DeleteIcon from '@material-ui/icons/Delete';
-import MusicNoteIcon from '@material-ui/icons/MusicNote';
-import PlaylistAddIcon from '@material-ui/icons/PlaylistAdd';
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import AvatarImage from './AvatarImage';
 
 const styles = theme => ({

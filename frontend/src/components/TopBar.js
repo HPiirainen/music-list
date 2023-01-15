@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 import {
     AppBar,
@@ -8,9 +8,9 @@ import {
     IconButton,
     Toolbar,
     Typography
-} from '@material-ui/core';
-import MenuIcon from '@material-ui/icons/Menu';
-import ChevronRight from '@material-ui/icons/ChevronRight';
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import ChevronRight from '@mui/icons-material/ChevronRight';
 
 const styles = theme => ({
     menuButton: {
@@ -41,7 +41,7 @@ const TopBar = props => {
                     color="inherit"
                     aria-label="Open filters"
                     onClick={() => toggleDrawer(true)}
-                >
+                    size="large">
                     <MenuIcon />
                 </IconButton>
                 <Drawer
@@ -55,7 +55,7 @@ const TopBar = props => {
                             color="inherit"
                             aria-label="Close filters"
                             onClick={() => toggleDrawer(false)}
-                        >
+                            size="large">
                             <ChevronRight />
                         </IconButton>
                         { props.children }
