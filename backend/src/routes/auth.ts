@@ -81,8 +81,6 @@ router.post('/signin', (req, res) => {
                 }
             }
 
-            console.log(user);
-
             const accessToken = createJWT(
                 user.email,
                 user._id,

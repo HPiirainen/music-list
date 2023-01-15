@@ -1,6 +1,7 @@
-const router = require('express').Router();
+import { Router } from 'express';
+import spotifyApi from '../spotify-api';
 
-const spotifyApi = require('../spotify-api');
+const router = Router();
 
 // Middleware for all routes
 router.use(async (req, res, next) => {
@@ -24,7 +25,7 @@ router.get('/search/:q', async (req, res) => {
             )
             .then(data => {
                 if (data.statusCode !== 200) {
-                    return res.status(data.statusCode).send(data.body.message);
+                    return res.status(data.statusCode).json(data.body);
                 }
                 return data.body;
             });
@@ -45,9 +46,9 @@ router.get('/artist/:q', async (req, res) => {
             )
             .then(data => {
                 if (data.statusCode !== 200) {
-                    return res.status(data.statusCode).send(data.body.message);
+                    return res.status(data.statusCode).json(data.body);
                 }
-                return data.body.artists.items;
+                return data.body.artists?.items;
             });
         return res.status(200).send(response);
     } catch (err) {
@@ -70,7 +71,7 @@ router.get('/artist/:id/albums', async (req, res) => {
             )
             .then(data => {
                 if ( data.statusCode !== 200) {
-                    return res.status(data.statusCode).send(data.body.message);
+                    return res.status(data.statusCode).json(data.body);
                 }
                 return data.body.items;
             });
@@ -90,7 +91,7 @@ router.get('/artist/:id/related', async (req, res) => {
             )
             .then(data => {
                 if (data.statusCode !== 200) {
-                    return res.status(data.statusCode).send(data.body.message);
+                    return res.status(data.statusCode).json(data.body);
                 }
                 return data.body.artists.slice(0, max);
             });
@@ -100,4 +101,4 @@ router.get('/artist/:id/related', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

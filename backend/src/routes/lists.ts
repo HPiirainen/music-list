@@ -1,5 +1,7 @@
-const router = require('express').Router();
-const List = require('../models/list.model');
+import { Router } from 'express';
+import List from '../models/list.model';
+
+const router = Router();
 
 // Get lists
 router.get('/', (req, res) => {
@@ -35,4 +37,4 @@ router.delete('/delete/:id', (req, res) => {
         .catch(err => res.status(400).json(err));
 });
 
-module.exports = router;
+export default router;
