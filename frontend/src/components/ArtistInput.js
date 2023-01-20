@@ -16,7 +16,6 @@ const ArtistInput = (props) => {
   const inputStyles = {
     textAlign: 'center',
     fontSize: 60,
-    fontFamily: theme.typography.headingFontFamily,
     color: theme.palette.primary.main,
   };
 

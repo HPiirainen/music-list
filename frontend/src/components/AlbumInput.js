@@ -10,24 +10,6 @@ const AlbumInput = (props) => {
 
   const getYear = (dateString) => new Date(dateString).getFullYear();
 
-  const renderAlbum = (props, album) => {
-    return (
-      <li {...props}>
-        <AvatarImage
-          images={album.images}
-          alt={album.name}
-          fallback={<AlbumIcon sx={{ fontSize: 42 }} />}
-          imageSize="medium"
-        />
-        <Box ml={2}>
-          <Typography variant="subtitle1">
-            {album.name} <small>({getYear(album.release_date)})</small>
-          </Typography>
-        </Box>
-      </li>
-    );
-  };
-
   if (!showInput) {
     return '';
   }

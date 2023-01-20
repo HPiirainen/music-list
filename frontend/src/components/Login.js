@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import messageTypes from '../utils/message-types';
+import MessageType from '../utils/MessageType';
 
 const Login = (props) => {
   const { setToken, setMessage, loginRoute } = props;
@@ -42,14 +42,15 @@ const Login = (props) => {
         setToken(token);
         setMessage({
           message: 'Login successful!',
-          type: messageTypes.success,
+          type: MessageType.Success,
         });
       })
       .catch((err) => {
+        console.log(err);
         if (err.response.data.errors) {
           setMessage({
             message: Object.values(err.response.data.errors).filter(Boolean),
-            type: messageTypes.error,
+            type: MessageType.Error,
           });
           setErrors(err.response.data.errors);
         }

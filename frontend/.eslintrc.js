@@ -1,17 +1,22 @@
 module.exports = {
   env: {
     browser: true,
-    es6: true,
+    es2021: true,
+    node: true,
   },
-  extends: ['prettier'],
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/eslint-recommended',
+    'plugin:@typescript-eslint/recommended',
+    'prettier',
+  ],
   parserOptions: {
     ecmaFeatures: {
-      experimentalObjectRestSpread: true,
       jsx: true,
     },
     sourceType: 'module',
   },
-  plugins: ['prettier', 'react', 'react-hooks'],
+  plugins: ['@typescript-eslint', 'prettier', 'react', 'react-hooks'],
   rules: {
     indent: ['error', 2],
     'linebreak-style': ['error', 'unix'],

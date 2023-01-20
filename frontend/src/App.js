@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from './utils/axios';
 import Theme from './utils/theme';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import {
   alpha,
   Backdrop,
@@ -30,14 +30,17 @@ import ActiveArtist from './components/ActiveArtist';
 import AlbumInput from './components/AlbumInput';
 import MusicList from './components/MusicList';
 import Message from './components/Message';
-import messageTypes from './utils/message-types';
+import MessageType from './utils/MessageType';
 import './utils/fonts';
 
-const PREFIX = 'App';
+// enum MessageType {
+//   Error = 0,
+//   Success,
+// };
 
 const apiBaseUrl = process.env.REACT_APP_API_URL;
 
-const App = (props) => {
+const App = () => {
   const storedToken = localStorage.getItem('token');
   const [jwt, setJwt] = useState(storedToken || null);
   const [searchBackdropOpen, setSearchBackdropOpen] = useState(false);
@@ -137,12 +140,12 @@ const App = (props) => {
     setLoading(true);
     axios
       .delete(deleteItemUrl)
-      .then((response) => {
+      .then(() => {
         loadListItems();
         loadGenres();
         setMessage({
           message: 'Item deleted successfully!',
-          type: messageTypes.success,
+          type: MessageType.Success,
         });
       })
       .catch((error) => {
@@ -156,12 +159,12 @@ const App = (props) => {
     setLoading(true);
     axios
       .put(updateItemUrl, { list: listId })
-      .then((response) => {
+      .then(() => {
         loadListItems();
         loadGenres();
         setMessage({
           message: 'Item updated successfully!',
-          type: messageTypes.success,
+          type: MessageType.Success,
         });
       })
       .catch((error) => {
@@ -179,7 +182,7 @@ const App = (props) => {
         if (response.data.length === 0) {
           setMessage({
             message: 'No related artists found.',
-            type: messageTypes.error,
+            type: MessageType.Error,
           });
         } else {
           setRelatedArtists(response.data);
@@ -293,7 +296,7 @@ const App = (props) => {
         setSearchBackdropOpen(false);
         setMessage({
           message: 'Item added successfully!',
-          type: messageTypes.success,
+          type: MessageType.Error,
         });
       })
       .catch((error) => {
@@ -337,7 +340,7 @@ const App = (props) => {
 
     setMessage({
       message: messages,
-      type: messageTypes.error,
+      type: MessageType.Error,
     });
   };
 
