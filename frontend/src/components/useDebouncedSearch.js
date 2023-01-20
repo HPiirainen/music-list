@@ -4,22 +4,22 @@ import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import { useAsync } from 'react-async-hook';
 
 const useDebouncedSearch = (searchFunction) => {
-    const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState('');
 
-    const debouncedSearchFunction = useConstant(() => 
-        AwesomeDebouncePromise(searchFunction, 300)
-    );
+  const debouncedSearchFunction = useConstant(() =>
+    AwesomeDebouncePromise(searchFunction, 300)
+  );
 
-    const searchResults = useAsync(
-        async () => debouncedSearchFunction(inputText),
-        [debouncedSearchFunction, inputText]
-    );
+  const searchResults = useAsync(
+    async () => debouncedSearchFunction(inputText),
+    [debouncedSearchFunction, inputText]
+  );
 
-    return {
-        inputText,
-        setInputText,
-        searchResults,
-    };
-}
+  return {
+    inputText,
+    setInputText,
+    searchResults,
+  };
+};
 
 export default useDebouncedSearch;

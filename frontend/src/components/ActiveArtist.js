@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@mui/styles';
 import {
   Button,
   Card,
@@ -14,21 +13,8 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import AvatarImage from './AvatarImage';
 
-const styles = theme => ({
-  centered: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  spacedEvenly: {
-    display: 'flex',
-    justifyContent: 'space-between',
-  },
-});
-
-const ActiveArtist = props => {
-  const { artist, classes, onAdd, onDismiss } = props;
+const ActiveArtist = (props) => {
+  const { artist, onAdd, onDismiss } = props;
 
   if (Object.keys(artist).length === 0) {
     return '';
@@ -37,16 +23,28 @@ const ActiveArtist = props => {
   return (
     <Fade in={true} timeout={1000}>
       <Card>
-        <CardContent className={classes.centered}>
+        <CardContent
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
           <AvatarImage
             images={artist.images}
             alt={artist.name}
-            fallback={<MusicNoteIcon style={{ fontSize: 120 }} />}
+            fallback={<MusicNoteIcon sx={{ fontSize: 120 }} />}
             imageSize="large"
           />
           <Typography variant="h2">{artist.name}</Typography>
         </CardContent>
-        <CardActions className={classes.spacedEvenly}>
+        <CardActions
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        >
           <Button
             color="primary"
             variant="contained"
@@ -75,4 +73,4 @@ ActiveArtist.propTypes = {
   onAdd: PropTypes.func.isRequired,
 };
 
-export default withStyles(styles)(ActiveArtist);
+export default ActiveArtist;

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 import {
   Accordion,
@@ -20,6 +19,8 @@ import {
   Tooltip,
   Typography,
   Zoom,
+  useTheme,
+  Box,
 } from '@mui/material';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import AlbumIcon from '@mui/icons-material/Album';
@@ -30,31 +31,33 @@ import PeopleIcon from '@mui/icons-material/People';
 import AvatarImage from './AvatarImage';
 import ArtistResultListItem from './ArtistResultListItem';
 
-const styles = theme => ({
-  centered: {
-    display: 'flex',
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  insetRight: {
-    marginRight: theme.spacing(4.5),
-  },
-});
-
-const MusicListItem = props => {
-  const { item, listActions, activeGenres, relatedArtists, onDeleteItem, onMoveItem, onGetRelated, onClearRelated, classes } = props;
+const MusicListItem = (props) => {
+  const {
+    item,
+    listActions,
+    activeGenres,
+    relatedArtists,
+    onDeleteItem,
+    onMoveItem,
+    onGetRelated,
+    onClearRelated,
+  } = props;
   const [selectedList, setSelectedList] = useState(null);
   const [listDialogOpen, setListDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  if (activeGenres.length && ! item.artist.genres.some(g => activeGenres.includes(g))) {
+  const theme = useTheme();
+
+  if (
+    activeGenres.length &&
+    !item.artist.genres.some((g) => activeGenres.includes(g))
+  ) {
     return null;
   }
 
   const hasAlbum = () => item.album !== null;
 
-  const getYear = dateString => new Date(dateString).getFullYear();
+  const getYear = (dateString) => new Date(dateString).getFullYear();
 
   const getAlbum = () => {
     if (hasAlbum()) {
@@ -64,14 +67,12 @@ const MusicListItem = props => {
             images={item.album.images}
             alt={item.album.name}
             imageSize="medium"
-            fallback={<AlbumIcon style={{ fontSize: 42 }} />}
+            fallback={<AlbumIcon sx={{ fontSize: 42 }} />}
           />
           <Typography component="h4" variant="h6">
             {item.album.name} <small>({getYear(item.album.releaseDate)})</small>
           </Typography>
-          <Typography variant="body1">
-            {item.album.tracks} tracks
-          </Typography>
+          <Typography variant="body1">{item.album.tracks} tracks</Typography>
         </>
       );
     }
@@ -80,29 +81,17 @@ const MusicListItem = props => {
 
   const getItemType = () => {
     if (hasAlbum()) {
-      return (
-        <Chip
-          color="primary"
-          icon={<AlbumIcon />}
-          label="Album"
-        />
-      );
+      return <Chip color="primary" icon={<AlbumIcon />} label="Album" />;
     }
-    return (
-      <Chip
-        color="primary"
-        icon={<MusicNoteIcon />}
-        label="Artist"
-      />
-    );
+    return <Chip color="primary" icon={<MusicNoteIcon />} label="Artist" />;
   };
 
   const getLists = () => {
-    return listActions.map(list => (
+    return listActions.map((list) => (
       <FormControlLabel
         value={list._id}
         key={list._id}
-        control={<Radio />}
+        control={<Radio color="secondary" />}
         label={list.title}
       />
     ));
@@ -125,32 +114,55 @@ const MusicListItem = props => {
     if (relatedArtists.length === 0) {
       return null;
     }
-    const related = relatedArtists.map(artist => {
-      return <ArtistResultListItem key={artist.id} artist={artist} showGenres={false} />;
-    })
+    const related = relatedArtists.map((artist) => {
+      return (
+        <ArtistResultListItem
+          key={artist.id}
+          artist={artist}
+          showGenres={false}
+        />
+      );
+    });
     return <List>{related}</List>;
-  }
+  };
 
   return (
     <Accordion TransitionProps={{ unmountOnExit: true }} square>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <div className={classes.centered}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexGrow: 1,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <AvatarImage
             images={item.artist.images}
             alt={item.artist.name}
             imageSize="medium"
-            fallback={<MusicNoteIcon style={{ fontSize: 42 }} />}
+            fallback={<MusicNoteIcon sx={{ fontSize: 42 }} />}
           />
-          <Typography component="h3" variant="h4">{item.artist.name}</Typography>
+          <Typography component="h3" variant="h4">
+            {item.artist.name}
+          </Typography>
           <Tooltip title={getTooltip()} TransitionComponent={Zoom} arrow>
             {getItemType()}
           </Tooltip>
-        </div>
+        </Box>
       </AccordionSummary>
       <AccordionDetails>
-        <div className={`${classes.centered} ${classes.insetRight}`}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexGrow: 1,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginRight: theme.spacing(4.5),
+          }}
+        >
           {getAlbum()}
-        </div>
+        </Box>
       </AccordionDetails>
       <AccordionActions>
         <Button
@@ -180,9 +192,7 @@ const MusicListItem = props => {
         <Dialog open={relatedArtists.length > 0} onClose={onClearRelated}>
           <DialogTitle>Related artists</DialogTitle>
           <DialogContent>
-            <DialogContent>
-              {getRelatedContent()}
-            </DialogContent>
+            <DialogContent>{getRelatedContent()}</DialogContent>
           </DialogContent>
         </Dialog>
         <Dialog open={deleteDialogOpen}>
@@ -214,7 +224,7 @@ const MusicListItem = props => {
         <Dialog open={listDialogOpen}>
           <DialogTitle>Move to list</DialogTitle>
           <DialogContent>
-            <RadioGroup onChange={e => setSelectedList(e.target.value)}>
+            <RadioGroup onChange={(e) => setSelectedList(e.target.value)}>
               {getLists()}
             </RadioGroup>
           </DialogContent>
@@ -252,4 +262,4 @@ MusicListItem.propTypes = {
   onClearRelated: PropTypes.func,
 };
 
-export default withStyles(styles)(MusicListItem);
+export default MusicListItem;

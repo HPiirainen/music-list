@@ -1,20 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@mui/styles';
-import { Chip } from '@mui/material';
+import { Chip, useTheme } from '@mui/material';
 
-const styles = theme => ({
-  chip: {
-    margin: theme.spacing(0.25),
-    pointerEvents: 'none',
-    '&:first-child': {
-      marginLeft: 0,
-    },
-  },
-});
-
-const Genre = props => {
-  const { genre, classes } = props;
+const Genre = (props) => {
+  const { genre } = props;
+  const theme = useTheme();
   return (
     <Chip
       key={genre}
@@ -22,7 +12,13 @@ const Genre = props => {
       size="small"
       color="primary"
       component="span"
-      className={classes.chip}
+      sx={{
+        margin: theme.spacing(0.25),
+        pointerEvents: 'none',
+        '&:first-of-type': {
+          marginLeft: 0,
+        },
+      }}
     />
   );
 };
@@ -31,4 +27,4 @@ Genre.propTypes = {
   genre: PropTypes.string.isRequired,
 };
 
-export default withStyles(styles)(Genre);
+export default Genre;

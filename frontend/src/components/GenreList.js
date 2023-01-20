@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Genre from './Genre';
 
-const GenreList = props => {
+const GenreList = (props) => {
   const { genres, showN } = props;
   if (!genres) {
     return '';
@@ -11,7 +11,7 @@ const GenreList = props => {
   const getItems = () => {
     return genres
       .slice(0, showN)
-      .map(genre => <Genre key={genre} genre={genre} />);
+      .map((genre) => <Genre key={genre} genre={genre} />);
   };
 
   const getAndMore = () => {

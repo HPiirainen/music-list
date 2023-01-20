@@ -1,27 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Autocomplete } from '@mui/lab';
-import {
-  Box,
-  Fade,
-  TextField,
-  Typography
-} from '@mui/material';
+import { Autocomplete } from '@mui/material';
+import { Box, Fade, TextField, Typography } from '@mui/material';
 import AlbumIcon from '@mui/icons-material/Album';
 import AvatarImage from './AvatarImage';
 
-const AlbumInput = props => {
+const AlbumInput = (props) => {
   const { showInput, albums, onSelectAlbum } = props;
 
-  const getYear = dateString => new Date(dateString).getFullYear();
+  const getYear = (dateString) => new Date(dateString).getFullYear();
 
-  const renderAlbum = album => {
+  const renderAlbum = (props, album) => {
     return (
-      <>
+      <li {...props}>
         <AvatarImage
           images={album.images}
           alt={album.name}
-          fallback={<AlbumIcon style={{ fontSize: 42 }} />}
+          fallback={<AlbumIcon sx={{ fontSize: 42 }} />}
           imageSize="medium"
         />
         <Box ml={2}>
@@ -29,7 +24,7 @@ const AlbumInput = props => {
             {album.name} <small>({getYear(album.release_date)})</small>
           </Typography>
         </Box>
-      </>
+      </li>
     );
   };
 
@@ -50,15 +45,24 @@ const AlbumInput = props => {
       <Autocomplete
         id="album-search"
         options={albums}
-        getOptionLabel={album => album.name}
-        renderOption={album => renderAlbum(album)}
-        renderInput={params => (
-          <TextField
-            {...params}
-            label="Select album"
-            variant="outlined"
-            fullWidth
-          />
+        getOptionLabel={(album) => album.name}
+        renderOption={(props, album) => (
+          <Box component="li" key={album.id} {...props}>
+            <AvatarImage
+              images={album.images}
+              alt={album.name}
+              fallback={<AlbumIcon sx={{ fontSize: 42 }} />}
+              imageSize="medium"
+            />
+            <Box ml={2}>
+              <Typography variant="subtitle1">
+                {album.name} <small>({getYear(album.release_date)})</small>
+              </Typography>
+            </Box>
+          </Box>
+        )}
+        renderInput={(params) => (
+          <TextField {...params} label="Select album" fullWidth />
         )}
         onChange={(e, value) => onSelectAlbum(value)}
       />

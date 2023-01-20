@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from './utils/axios';
 import Theme from './utils/theme';
-import { ThemeProvider, StyledEngineProvider, createTheme } from '@mui/material/styles';
-import { withStyles } from '@mui/styles';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import {
+  alpha,
   Backdrop,
   Box,
   CircularProgress,
@@ -14,6 +14,7 @@ import {
   IconButton,
   List,
   Tab,
+  useTheme,
 } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import Search from '@mui/icons-material/Search';
@@ -32,39 +33,11 @@ import Message from './components/Message';
 import messageTypes from './utils/message-types';
 import './utils/fonts';
 
-const theme = createTheme();
-
-const styles = theme => ({
-  backdrop: {
-    zIndex: theme.zIndex.drawer + 2,
-    color: theme.palette.common.white,
-    backgroundColor: 'rgba(0, 0, 0, .4)',
-  },
-  fullScreenBackdrop: {
-    backgroundColor: theme.palette.common.black,
-    zIndex: theme.zIndex.drawer + 1,
-    alignItems: 'flex-start',
-    flexWrap: 'wrap',
-    overflowY: 'auto',
-  },
-  backdropContent: {
-    height: '100%',
-    textAlign: 'center',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: theme.spacing(1),
-    right: theme.spacing(1),
-  },
-  tabPanel: {
-    padding: theme.spacing(3, 0),
-  },
-});
+const PREFIX = 'App';
 
 const apiBaseUrl = process.env.REACT_APP_API_URL;
 
-const App = props => {
-  const { classes } = props;
+const App = (props) => {
   const storedToken = localStorage.getItem('token');
   const [jwt, setJwt] = useState(storedToken || null);
   const [searchBackdropOpen, setSearchBackdropOpen] = useState(false);
@@ -81,6 +54,8 @@ const App = props => {
   const [loadingAlbums, setLoadingAlbums] = useState(false);
   const [message, setMessage] = useState({});
   const [activeTab, setActiveTab] = useState(null);
+
+  const theme = useTheme();
 
   useEffect(() => {
     if (jwt) {
@@ -126,14 +101,14 @@ const App = props => {
       .then(
         axios.spread((...responses) => {
           const allItems = responses[1].data;
-          const lists = responses[0].data.map(list => {
-            const items = allItems.filter(item => item.list === list._id);
+          const lists = responses[0].data.map((list) => {
+            const items = allItems.filter((item) => item.list === list._id);
             return { ...list, items };
           });
           setLists(lists);
         })
       )
-      .catch(error => {
+      .catch((error) => {
         handleError(error);
       })
       .finally(() => {
@@ -142,26 +117,27 @@ const App = props => {
   };
 
   const loadGenres = () => {
-    axios.get(`${apiBaseUrl}/items/genres`)
-      .then(response => {
+    axios
+      .get(`${apiBaseUrl}/items/genres`)
+      .then((response) => {
         setGenres(response.data);
       })
-      .catch(error => {
+      .catch((error) => {
         handleError(error);
       });
-  }
+  };
 
   const getDefaultListId = () => {
-    const defaultList = lists.find(list => list.isDefault);
+    const defaultList = lists.find((list) => list.isDefault);
     return defaultList ? defaultList._id : null;
   };
 
-  const deleteItem = item => {
+  const deleteItem = (item) => {
     const deleteItemUrl = `${apiBaseUrl}/items/delete/${item._id}`;
     setLoading(true);
     axios
       .delete(deleteItemUrl)
-      .then(response => {
+      .then((response) => {
         loadListItems();
         loadGenres();
         setMessage({
@@ -169,7 +145,7 @@ const App = props => {
           type: messageTypes.success,
         });
       })
-      .catch(error => {
+      .catch((error) => {
         handleError(error);
         setLoading(false);
       });
@@ -180,7 +156,7 @@ const App = props => {
     setLoading(true);
     axios
       .put(updateItemUrl, { list: listId })
-      .then(response => {
+      .then((response) => {
         loadListItems();
         loadGenres();
         setMessage({
@@ -188,7 +164,7 @@ const App = props => {
           type: messageTypes.success,
         });
       })
-      .catch(error => {
+      .catch((error) => {
         handleError(error);
         setLoading(false);
       });
@@ -199,7 +175,7 @@ const App = props => {
     setLoading(true);
     axios
       .get(relatedArtistsUrl)
-      .then(response => {
+      .then((response) => {
         if (response.data.length === 0) {
           setMessage({
             message: 'No related artists found.',
@@ -209,12 +185,12 @@ const App = props => {
           setRelatedArtists(response.data);
         }
       })
-      .catch(error => {
+      .catch((error) => {
         handleError(error);
       })
       .finally(() => {
         setLoading(false);
-      })
+      });
   };
 
   const clearRelatedArtists = () => {
@@ -226,13 +202,15 @@ const App = props => {
       setArtistResults([]);
       return;
     }
-    const artistSearchUrl = `${apiBaseUrl}/spotify/artist/${encodeURIComponent(artistQuery)}`;
+    const artistSearchUrl = `${apiBaseUrl}/spotify/artist/${encodeURIComponent(
+      artistQuery
+    )}`;
     axios
       .get(artistSearchUrl)
-      .then(response => {
+      .then((response) => {
         setArtistResults(response.data);
       })
-      .catch(error => {
+      .catch((error) => {
         handleError(error);
       });
   };
@@ -246,10 +224,10 @@ const App = props => {
     const albumSearchUrl = `${apiBaseUrl}/spotify/artist/${activeArtist.id}/albums`;
     axios
       .get(albumSearchUrl)
-      .then(response => {
+      .then((response) => {
         setAlbums(response.data);
       })
-      .catch(error => {
+      .catch((error) => {
         handleError(error);
       })
       .finally(() => {
@@ -257,11 +235,11 @@ const App = props => {
       });
   };
 
-  const setArtist = artist => {
+  const setArtist = (artist) => {
     setActiveArtist(artist);
   };
 
-  const setAlbum = album => {
+  const setAlbum = (album) => {
     setActiveAlbum(album);
   };
 
@@ -318,7 +296,7 @@ const App = props => {
           type: messageTypes.success,
         });
       })
-      .catch(error => {
+      .catch((error) => {
         handleError(error);
       })
       .finally(() => setLoading(false));
@@ -326,9 +304,9 @@ const App = props => {
 
   const onSetGenres = (genres) => {
     setActiveGenres(genres);
-  }
+  };
 
-  const handleError = error => {
+  const handleError = (error) => {
     let messages = '';
     if (error.response) {
       console.log(error.response);
@@ -342,7 +320,7 @@ const App = props => {
         console.log(error.response.data);
         messages = Object.values(error.response.data.errors)
           .filter(Boolean)
-          .map(msg => {
+          .map((msg) => {
             if (msg.message) {
               return msg.message;
             }
@@ -356,7 +334,7 @@ const App = props => {
     }
 
     console.log('setting message', messages);
-    
+
     setMessage({
       message: messages,
       type: messageTypes.error,
@@ -365,7 +343,7 @@ const App = props => {
 
   const clearMessage = () => {
     setMessage({});
-  }
+  };
 
   const isArtistInputVisible = !hasActiveArtist;
 
@@ -376,10 +354,14 @@ const App = props => {
       return null;
     }
 
-    const tabPanels = lists.map(list => {
-      const listActions = lists.filter(l => l._id !== list._id);
+    const tabPanels = lists.map((list) => {
+      const listActions = lists.filter((l) => l._id !== list._id);
       return (
-        <TabPanel key={list._id} value={list._id} className={classes.tabPanel}>
+        <TabPanel
+          key={list._id}
+          value={list._id}
+          sx={{ padding: theme.spacing(3, 0) }}
+        >
           <MusicList
             key={list._id}
             list={list}
@@ -395,14 +377,8 @@ const App = props => {
       );
     });
 
-    const tabs = lists.map(list => {
-      return (
-        <Tab
-          key={list._id}
-          label={list.title}
-          value={list._id}
-        />
-      );
+    const tabs = lists.map((list) => {
+      return <Tab key={list._id} label={list.title} value={list._id} />;
     });
     return (
       <TabContext value={activeTab}>
@@ -420,7 +396,7 @@ const App = props => {
   };
 
   const getArtistContent = () => {
-    const elements = artistResults.map(artist => (
+    const elements = artistResults.map((artist) => (
       <React.Fragment key={artist.id}>
         <ArtistResultListItem
           key={artist.id}
@@ -447,7 +423,14 @@ const App = props => {
   } else {
     mainContent = (
       <Container maxWidth="md" className="app">
-        <Backdrop className={classes.backdrop} open={loading}>
+        <Backdrop
+          sx={{
+            zIndex: theme.zIndex.drawer + 2,
+            color: theme.palette.common.white,
+            backgroundColor: alpha(theme.palette.common.black, 0.4),
+          }}
+          open={loading}
+        >
           <CircularProgress color="inherit" disableShrink />
         </Backdrop>
         <Fade in={true} timeout={1000}>
@@ -457,33 +440,46 @@ const App = props => {
                 aria-label="Open search"
                 color="primary"
                 onClick={() => setSearchBackdropOpen(true)}
-                size="large">
+                size="large"
+              >
                 <Search fontSize="large" />
               </IconButton>
             </Box>
             <Backdrop
               open={searchBackdropOpen}
-              className={classes.fullScreenBackdrop}
+              sx={{
+                backgroundColor: theme.palette.common.black,
+                zIndex: theme.zIndex.drawer + 1,
+                alignItems: 'flex-start',
+                flexWrap: 'wrap',
+                overflowY: 'auto',
+              }}
             >
-              {searchBackdropOpen &&
+              {searchBackdropOpen && (
                 <>
                   <IconButton
                     aria-label="Close search"
                     onClick={() => setSearchBackdropOpen(false)}
-                    className={classes.closeButton}
-                    size="large">
+                    sx={{
+                      position: 'absolute',
+                      top: theme.spacing(1),
+                      right: theme.spacing(1),
+                    }}
+                    size="large"
+                  >
                     <Close fontSize="large" />
                   </IconButton>
-                  <Container maxWidth="sm" className={classes.backdropContent}>
+                  <Container
+                    maxWidth="sm"
+                    sx={{ height: '100%', textAlign: 'center' }}
+                  >
                     <Box mt={8}>
                       <ArtistInput
                         value={artistQuery}
                         showInput={isArtistInputVisible}
-                        onInputChange={text => setArtistQuery(text)}
+                        onInputChange={(text) => setArtistQuery(text)}
                       />
-                      <Box mt={4}>
-                        {getArtistContent()}
-                      </Box>
+                      <Box mt={4}>{getArtistContent()}</Box>
                       <ActiveArtist
                         artist={activeArtist}
                         onDismiss={() => setActiveArtist({})}
@@ -499,28 +495,30 @@ const App = props => {
                     </Box>
                   </Container>
                 </>
-              }
+              )}
             </Backdrop>
             {getListContent()}
           </Box>
         </Fade>
       </Container>
-    )
+    );
   }
 
   return (
-    <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={Theme}>
-        <CssBaseline>
-          <TopBar appTitle="Musiqueue">
-            <GenreFilter genres={genres} activeGenres={activeGenres} genreSetter={onSetGenres} />
-          </TopBar>
-          { mainContent }
-          <Message message={message} onClear={clearMessage}></Message>
-        </CssBaseline>
-      </ThemeProvider>
-    </StyledEngineProvider>
+    <ThemeProvider theme={Theme}>
+      <CssBaseline>
+        <TopBar appTitle="Musiqueue">
+          <GenreFilter
+            genres={genres}
+            activeGenres={activeGenres}
+            genreSetter={onSetGenres}
+          />
+        </TopBar>
+        {mainContent}
+        <Message message={message} onClear={clearMessage}></Message>
+      </CssBaseline>
+    </ThemeProvider>
   );
 };
 
-export default withStyles(styles)(App);
+export default App;

@@ -1,43 +1,31 @@
 import React, { useState } from 'react';
-import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import MusicListItem from './MusicListItem';
 
-const styles = theme => ({
-  list: {
-    marginBottom: theme.spacing(2.5),
-    marginTop: theme.spacing(2.5),
-  },
-  listHeading: {
-    textAlign: 'center',
-    marginBottom: theme.spacing(1.5),
-  },
-  listDescription: {
-    textAlign: 'center',
-    marginBottom: theme.spacing(1.5),
-  },
-});
+const MusicList = (props) => {
+  const { list, ...childProps } = props;
+  const theme = useTheme();
 
-const MusicList = props => {
-  const { list, classes, ...childProps } = props;
+  // const [hasNextPage, setHasNextPage] = useState(true);
+  // const [isNextPageLoading, setIsNextPageLoading] = useState(false);
+  // const [items, setItems] = useState(list.items);
 
-  const [hasNextPage, setHasNextPage] = useState(true);
-  const [isNextPageLoading, setIsNextPageLoading] = useState(false);
-  const [items, setItems] = useState(list.items);
-
-  const loadMore = () => {
-    // TODO:
-    // Infinite loader,
-    // load the active list only at first,
-    // load other lists when tab is opened.
-  }
+  // const loadMore = () => {
+  //   // TODO:
+  //   // Infinite loader,
+  //   // load the active list only at first,
+  //   // load other lists when tab is opened.
+  // };
 
   const getContent = () => {
     if (list.items.length) {
-      return list.items.map(item => (
+      return list.items.map((item) => (
         <MusicListItem
-          className={classes.list}
+          sx={{
+            marginBottom: theme.spacing(2.5),
+            marginTop: theme.spacing(2.5),
+          }}
           key={item._id}
           item={item}
           {...childProps}
@@ -49,10 +37,18 @@ const MusicList = props => {
 
   return (
     <Box my={2}>
-      <Typography variant="h2" className={classes.listHeading}>
+      <Typography
+        variant="h2"
+        sx={{ textAlign: 'center', marginBottom: theme.spacing(1.5) }}
+      >
         {list.title}
       </Typography>
-      <Typography variant="body1" className={classes.listDescription}>{list.description}</Typography>
+      <Typography
+        variant="body1"
+        sx={{ textAlign: 'center', marginBottom: theme.spacing(1.5) }}
+      >
+        {list.description}
+      </Typography>
       {getContent()}
     </Box>
   );
@@ -66,4 +62,4 @@ MusicList.propTypes = {
   onDeleteItem: PropTypes.func,
 };
 
-export default withStyles(styles)(MusicList);
+export default MusicList;

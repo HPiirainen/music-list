@@ -1,28 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@mui/styles';
-import { Avatar } from '@mui/material';
+import { Avatar, useTheme } from '@mui/material';
 
-const styles = theme => ({
-  large: {
-    width: theme.spacing(25),
-    height: theme.spacing(25),
-  },
-  medium: {
-    width: theme.spacing(10),
-    height: theme.spacing(10),
-  },
-});
+const AvatarImage = (props) => {
+  const { images, alt, fallback, maxWidth, imageSize } = props;
+  const theme = useTheme();
 
-const AvatarImage = props => {
-  const { images, alt, fallback, maxWidth, imageSize, classes } = props;
-
-  const image = images.find(image => image.width <= maxWidth);
+  const image = images.find((image) => image.width <= maxWidth);
+  const imageStyle = {
+    width: theme.spacing(imageSize === 'large' ? 25 : 10),
+    height: theme.spacing(imageSize === 'large' ? 25 : 10),
+  };
 
   if (!image) {
-    return <Avatar className={classes[imageSize]}>{fallback}</Avatar>;
+    return <Avatar sx={imageStyle}>{fallback}</Avatar>;
   }
-  return <Avatar alt={alt} src={image.url} className={classes[imageSize]} />;
+  return <Avatar alt={alt} src={image.url} sx={imageStyle} />;
 };
 
 AvatarImage.defaultProps = {
@@ -37,4 +30,4 @@ AvatarImage.propTypes = {
   imageSize: PropTypes.string,
 };
 
-export default withStyles(styles)(AvatarImage);
+export default AvatarImage;

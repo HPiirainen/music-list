@@ -5,19 +5,21 @@ import {
   Fade,
   ListItem,
   ListItemAvatar,
-  ListItemText
+  ListItemText,
 } from '@mui/material';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import AvatarImage from './AvatarImage';
 import GenreList from './GenreList';
 
-const ArtistResultListItem = props => {
+const ArtistResultListItem = (props) => {
   const { artist, showGenres, onSelectArtist } = props;
 
   if (Object.keys(artist).length === 0) {
     return '';
   }
-  const secondaryContent = showGenres ? <GenreList genres={artist.genres} showN={3} /> : null;
+  const secondaryContent = showGenres ? (
+    <GenreList genres={artist.genres} showN={3} />
+  ) : null;
   const content = (
     <>
       <ListItemAvatar>
@@ -26,7 +28,7 @@ const ArtistResultListItem = props => {
             images={artist.images}
             alt={artist.name}
             imageSize="medium"
-            fallback={<MusicNoteIcon style={{ fontSize: 42 }} />}
+            fallback={<MusicNoteIcon sx={{ fontSize: 42 }} />}
           />
         </Box>
       </ListItemAvatar>
@@ -47,13 +49,11 @@ const ArtistResultListItem = props => {
           </ListItem>
         </Box>
       </Fade>
-    )
+    );
   }
   return (
     <Fade in={true}>
-      <ListItem>
-        {content}
-      </ListItem>
+      <ListItem>{content}</ListItem>
     </Fade>
   );
 };

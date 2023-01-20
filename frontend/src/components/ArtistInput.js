@@ -1,27 +1,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import useDebouncedSearch from './useDebouncedSearch';
-import { withStyles } from '@mui/styles';
-import {
-  Fade,
-  TextField,
-} from '@mui/material';
+import { Fade, TextField, useTheme } from '@mui/material';
 
-const styles = theme => ({
-  input: {
+const ArtistInput = (props) => {
+  const { artistQuery, showInput, onInputChange } = props;
+
+  const useArtistSearch = () =>
+    useDebouncedSearch((text) => onInputChange(text));
+
+  const { setInputText } = useArtistSearch();
+
+  const theme = useTheme();
+
+  const inputStyles = {
     textAlign: 'center',
     fontSize: 60,
     fontFamily: theme.typography.headingFontFamily,
     color: theme.palette.primary.main,
-  },
-});
-
-const ArtistInput = props => {
-  const { classes, artistQuery, showInput, onInputChange } = props;
-
-  const useArtistSearch = () => useDebouncedSearch(text => onInputChange(text));
-
-  const { setInputText } = useArtistSearch();
+  };
 
   if (!showInput) {
     return '';
@@ -36,9 +33,10 @@ const ArtistInput = props => {
         autoFocus
         fullWidth
         value={artistQuery}
-        onChange={e => setInputText(e.target.value)}
+        variant="standard"
+        onChange={(e) => setInputText(e.target.value)}
         inputProps={{
-          className: classes.input,
+          sx: inputStyles,
           autoComplete: 'off',
         }}
       />
@@ -52,4 +50,4 @@ ArtistInput.propTypes = {
   onInputChange: PropTypes.func,
 };
 
-export default withStyles(styles)(ArtistInput);
+export default ArtistInput;
