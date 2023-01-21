@@ -1,18 +1,30 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Box } from '@mui/material';
 import { FixedSizeList } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
+
+interface InfiniteWrapperProps {
+  hasNextPage: boolean;
+  isNextPageLoading: boolean;
+  items: ReactNode[];
+  loadNextPage: CallableFunction;
+}
+
+interface Item {
+  index: number;
+  style: object;
+}
 
 const InfiniteWrapper = ({
   hasNextPage,
   isNextPageLoading,
   items,
   loadNextPage,
-}) => {
+}: InfiniteWrapperProps) => {
   const itemCount = hasNextPage ? items.length + 1 : items.length;
   const loadMoreItems = isNextPageLoading ? () => ({}) : loadNextPage;
-  const isItemLoaded = (index) => !hasNextPage || index < items.length;
-  const Item = ({ index, style }) => {
+  const isItemLoaded = (index: number) => !hasNextPage || index < items.length;
+  const Item = ({ index, style }: Item) => {
     let content;
     if (!isItemLoaded(index)) {
       content = 'Loading...';

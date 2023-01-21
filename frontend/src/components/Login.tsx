@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { Dispatch, FormEvent, SetStateAction, useState } from 'react';
 import axios from '../utils/axios';
 import {
   Box,
@@ -10,16 +9,30 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import MessageType from '../utils/MessageType';
+import { TMessage } from '../types/types';
 
-const Login = (props) => {
-  const { setToken, setMessage, loginRoute } = props;
+type Error = {
+  [key: string]: string;
+};
 
+// TODO: Accepts single or multiple strings, could be enhanced.
+// type Message = {
+//   message?: string | string[];
+//   type?: number;
+// };
+
+interface LoginProps {
+  setToken: Dispatch<SetStateAction<string | null>>;
+  setMessage: Dispatch<SetStateAction<TMessage>>;
+  loginRoute: string;
+}
+
+const Login = ({ setToken, setMessage, loginRoute }: LoginProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Error>({});
 
-  const hasError = (field) => {
+  const hasError = (field: string) => {
     if ('message' in errors && errors.message) {
       return true;
     }
@@ -29,7 +42,7 @@ const Login = (props) => {
     return false;
   };
 
-  const signIn = (e) => {
+  const signIn = (e: FormEvent) => {
     e.preventDefault();
     axios
       .post(loginRoute, {
@@ -42,15 +55,17 @@ const Login = (props) => {
         setToken(token);
         setMessage({
           message: 'Login successful!',
-          type: MessageType.Success,
+          type: 'success',
         });
       })
       .catch((err) => {
         console.log(err);
         if (err.response.data.errors) {
           setMessage({
-            message: Object.values(err.response.data.errors).filter(Boolean),
-            type: MessageType.Error,
+            message: Object.values<string>(err.response.data.errors).filter(
+              Boolean
+            ),
+            type: 'error',
           });
           setErrors(err.response.data.errors);
         }
@@ -115,12 +130,6 @@ const Login = (props) => {
       </Container>
     </Fade>
   );
-};
-
-Login.propTypes = {
-  setToken: PropTypes.func,
-  setMessage: PropTypes.func,
-  loginRoute: PropTypes.string,
 };
 
 export default Login;

@@ -1,14 +1,19 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { Dispatch, SetStateAction } from 'react';
 import { Autocomplete } from '@mui/material';
 import { Box, Fade, TextField, Typography } from '@mui/material';
 import AlbumIcon from '@mui/icons-material/Album';
 import AvatarImage from './AvatarImage';
+import { TAlbum } from '../types/types';
 
-const AlbumInput = (props) => {
-  const { showInput, albums, onSelectAlbum } = props;
+interface AlbumInputProps {
+  showInput: boolean;
+  albums: TAlbum[];
+  onSelectAlbum: Dispatch<SetStateAction<TAlbum | null>>;
+}
 
-  const getYear = (dateString) => new Date(dateString).getFullYear();
+const AlbumInput = ({ showInput, albums, onSelectAlbum }: AlbumInputProps) => {
+  const getYear = (dateString: string | undefined) =>
+    dateString ? new Date(dateString).getFullYear() : '';
 
   if (!showInput) {
     return '';
@@ -29,7 +34,7 @@ const AlbumInput = (props) => {
         options={albums}
         getOptionLabel={(album) => album.name}
         renderOption={(props, album) => (
-          <Box component="li" key={album.id} {...props}>
+          <Box component="li" {...props} key={album.id}>
             <AvatarImage
               images={album.images}
               alt={album.name}
@@ -50,12 +55,6 @@ const AlbumInput = (props) => {
       />
     </Fade>
   );
-};
-
-AlbumInput.propTypes = {
-  albums: PropTypes.arrayOf(PropTypes.object).isRequired,
-  showInput: PropTypes.bool,
-  onSelectAlbum: PropTypes.func,
 };
 
 export default AlbumInput;

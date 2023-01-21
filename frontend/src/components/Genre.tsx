@@ -1,9 +1,12 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Chip, useTheme } from '@mui/material';
+import { TGenre } from '../types/types';
 
-const Genre = (props) => {
-  const { genre } = props;
+interface GenreProps {
+  genre: TGenre;
+}
+
+const Genre = ({ genre }: GenreProps) => {
   const theme = useTheme();
   return (
     <Chip
@@ -21,10 +24,6 @@ const Genre = (props) => {
       }}
     />
   );
-};
-
-Genre.propTypes = {
-  genre: PropTypes.string.isRequired,
 };
 
 export default Genre;

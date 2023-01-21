@@ -30,13 +30,7 @@ import ActiveArtist from './components/ActiveArtist';
 import AlbumInput from './components/AlbumInput';
 import MusicList from './components/MusicList';
 import Message from './components/Message';
-import MessageType from './utils/MessageType';
 import './utils/fonts';
-
-// enum MessageType {
-//   Error = 0,
-//   Success,
-// };
 
 const apiBaseUrl = process.env.REACT_APP_API_URL;
 
@@ -145,7 +139,7 @@ const App = () => {
         loadGenres();
         setMessage({
           message: 'Item deleted successfully!',
-          type: MessageType.Success,
+          type: 'success',
         });
       })
       .catch((error) => {
@@ -164,7 +158,7 @@ const App = () => {
         loadGenres();
         setMessage({
           message: 'Item updated successfully!',
-          type: MessageType.Success,
+          type: 'success',
         });
       })
       .catch((error) => {
@@ -182,7 +176,7 @@ const App = () => {
         if (response.data.length === 0) {
           setMessage({
             message: 'No related artists found.',
-            type: MessageType.Error,
+            type: 'error',
           });
         } else {
           setRelatedArtists(response.data);
@@ -296,7 +290,7 @@ const App = () => {
         setSearchBackdropOpen(false);
         setMessage({
           message: 'Item added successfully!',
-          type: MessageType.Error,
+          type: 'error',
         });
       })
       .catch((error) => {
@@ -340,7 +334,7 @@ const App = () => {
 
     setMessage({
       message: messages,
-      type: MessageType.Error,
+      type: 'error',
     });
   };
 

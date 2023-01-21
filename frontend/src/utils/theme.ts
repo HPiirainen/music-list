@@ -1,4 +1,4 @@
-import { Components, createTheme, Palette } from '@mui/material/styles';
+import { Components, createTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 
 // Allow custom colors.
@@ -206,7 +206,6 @@ const Theme = createTheme({
     text: {
       primary: colors.white,
       secondary: colors.white,
-      // highlights: colors.yellow,
     },
     divider: 'rgba(255, 255, 255, .65)',
   },

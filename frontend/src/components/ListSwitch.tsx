@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { ChangeEvent } from 'react';
 import {
   ListItem,
   ListItemIcon,
@@ -8,12 +7,26 @@ import {
   Typography,
 } from '@mui/material';
 
-const ListSwitch = (props) => {
-  const { identifier, label, isChecked, onSwitch } = props;
+type SwitchHandler = (state: boolean, genre?: string) => void;
+type Identifier = string | number;
+
+interface ListSwitchProps {
+  identifier: Identifier;
+  label: string;
+  isChecked: boolean;
+  onSwitch: SwitchHandler;
+}
+
+const ListSwitch = ({
+  identifier,
+  label,
+  isChecked,
+  onSwitch,
+}: ListSwitchProps) => {
   const labelId = `switch-label-${identifier}`;
 
-  const sendState = (e) => {
-    onSwitch(e.target.checked, label);
+  const sendState = (e: ChangeEvent, checked: boolean) => {
+    onSwitch(checked, label);
   };
 
   return (
@@ -34,13 +47,6 @@ const ListSwitch = (props) => {
       />
     </ListItem>
   );
-};
-
-ListSwitch.propTypes = {
-  identifier: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  label: PropTypes.string,
-  isChecked: PropTypes.bool,
-  onSwitch: PropTypes.func,
 };
 
 export default ListSwitch;

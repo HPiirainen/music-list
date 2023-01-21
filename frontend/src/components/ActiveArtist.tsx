@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { Dispatch, SetStateAction } from 'react';
 import {
   Button,
   Card,
@@ -12,10 +11,15 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import AvatarImage from './AvatarImage';
+import { TArtist } from '../types/types';
 
-const ActiveArtist = (props) => {
-  const { artist, onAdd, onDismiss } = props;
+interface ActiveArtistProps {
+  artist: TArtist;
+  onAdd: Dispatch<SetStateAction<void>>;
+  onDismiss: Dispatch<SetStateAction<void>>;
+}
 
+const ActiveArtist = ({ artist, onAdd, onDismiss }: ActiveArtistProps) => {
   if (Object.keys(artist).length === 0) {
     return '';
   }
@@ -65,12 +69,6 @@ const ActiveArtist = (props) => {
       </Card>
     </Fade>
   );
-};
-
-ActiveArtist.propTypes = {
-  artist: PropTypes.object.isRequired,
-  onDismiss: PropTypes.func.isRequired,
-  onAdd: PropTypes.func.isRequired,
 };
 
 export default ActiveArtist;

@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { PropsWithChildren, useState } from 'react';
 import {
   AppBar,
   Box,
@@ -12,13 +11,16 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 
-const TopBar = (props) => {
-  const { appTitle } = props;
+interface TopBarProps {
+  appTitle: string;
+}
+
+const TopBar = ({ appTitle, children }: PropsWithChildren<TopBarProps>) => {
   const theme = useTheme();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const toggleDrawer = (open) => {
+  const toggleDrawer = (open: boolean) => {
     setDrawerOpen(open);
   };
 
@@ -49,16 +51,12 @@ const TopBar = (props) => {
             >
               <ChevronRight />
             </IconButton>
-            {props.children}
+            {children}
           </Box>
         </Drawer>
       </Toolbar>
     </AppBar>
   );
-};
-
-TopBar.propTypes = {
-  appTitle: PropTypes.string,
 };
 
 export default TopBar;
