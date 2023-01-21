@@ -7,6 +7,10 @@ export type TMessage = {
 
 export type TGenre = string;
 
+export type TExternalUrls = {
+  spotify: string;
+};
+
 export type TList = {
   _id: string;
   items: TListItem[];
@@ -19,13 +23,13 @@ export type TList = {
 };
 
 export type TListItem = {
-  _id: string;
-  id: string;
-  list: TList;
+  _id?: string;
+  id?: string;
+  list?: string | null;
   artist: TArtist;
-  album?: TAlbum;
-  createdAt: string;
-  updatedAt: string;
+  album?: TAlbum | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type TImage = {
@@ -36,21 +40,24 @@ export type TImage = {
 };
 
 export type TArtist = {
-  _id: string;
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
+  external_urls?: TExternalUrls;
   url?: string;
   images?: TImage[];
   genres: TGenre[];
 };
 
 export type TAlbum = {
-  _id: string;
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
+  external_urls?: TExternalUrls;
   url?: string;
   images?: TImage[];
   releaseDate?: string;
   release_date?: string;
   tracks?: number;
+  total_tracks?: number;
 };

@@ -10,7 +10,7 @@ interface MusicListProps {
   relatedArtists: TArtist[];
   onDeleteItem: (item: TListItem) => void;
   onMoveItem: (item: TListItem, list: string) => void;
-  onGetRelated: (id: string) => void;
+  onGetRelated: (id: string | undefined) => void;
   onClearRelated: () => void;
 }
 

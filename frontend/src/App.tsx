@@ -30,27 +30,36 @@ import ActiveArtist from './components/ActiveArtist';
 import AlbumInput from './components/AlbumInput';
 import MusicList from './components/MusicList';
 import Message from './components/Message';
+import {
+  TAlbum,
+  TArtist,
+  TGenre,
+  TList,
+  TListItem,
+  TMessage,
+} from './types/types';
 import './utils/fonts';
+import { AxiosError } from 'axios';
 
 const apiBaseUrl = process.env.REACT_APP_API_URL;
 
 const App = () => {
   const storedToken = localStorage.getItem('token');
-  const [jwt, setJwt] = useState(storedToken || null);
-  const [searchBackdropOpen, setSearchBackdropOpen] = useState(false);
-  const [lists, setLists] = useState([]);
-  const [genres, setGenres] = useState([]);
-  const [activeGenres, setActiveGenres] = useState([]);
-  const [activeArtist, setActiveArtist] = useState({});
-  const [artistResults, setArtistResults] = useState([]);
-  const [activeAlbum, setActiveAlbum] = useState({});
-  const [albums, setAlbums] = useState([]);
-  const [artistQuery, setArtistQuery] = useState('');
-  const [relatedArtists, setRelatedArtists] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingAlbums, setLoadingAlbums] = useState(false);
-  const [message, setMessage] = useState({});
-  const [activeTab, setActiveTab] = useState(null);
+  const [jwt, setJwt] = useState<string | null>(storedToken || null);
+  const [searchBackdropOpen, setSearchBackdropOpen] = useState<boolean>(false);
+  const [lists, setLists] = useState<TList[]>([]);
+  const [genres, setGenres] = useState<TGenre[]>([]);
+  const [activeGenres, setActiveGenres] = useState<TGenre[]>([]);
+  const [activeArtist, setActiveArtist] = useState<TArtist>({} as TArtist);
+  const [artistResults, setArtistResults] = useState<TArtist[]>([]);
+  const [activeAlbum, setActiveAlbum] = useState<TAlbum>({} as TAlbum);
+  const [albums, setAlbums] = useState<TAlbum[]>([]);
+  const [artistQuery, setArtistQuery] = useState<string>('');
+  const [relatedArtists, setRelatedArtists] = useState<TArtist[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [loadingAlbums, setLoadingAlbums] = useState<boolean>(false);
+  const [message, setMessage] = useState<TMessage | Record<string, never>>({});
+  const [activeTab, setActiveTab] = useState<string | null>(null);
 
   const theme = useTheme();
 
@@ -84,9 +93,9 @@ const App = () => {
   useEffect(() => {
     if (!searchBackdropOpen) {
       setArtistResults([]);
-      setActiveArtist({});
+      setActiveArtist({} as TArtist);
       setAlbums([]);
-      setActiveAlbum({});
+      setActiveAlbum({} as TAlbum);
     }
   }, [searchBackdropOpen]);
 
@@ -98,8 +107,10 @@ const App = () => {
       .then(
         axios.spread((...responses) => {
           const allItems = responses[1].data;
-          const lists = responses[0].data.map((list) => {
-            const items = allItems.filter((item) => item.list === list._id);
+          const lists = responses[0].data.map((list: TList) => {
+            const items = allItems.filter(
+              (item: TListItem) => item.list === list._id
+            );
             return { ...list, items };
           });
           setLists(lists);
@@ -129,7 +140,7 @@ const App = () => {
     return defaultList ? defaultList._id : null;
   };
 
-  const deleteItem = (item) => {
+  const deleteItem = (item: TListItem) => {
     const deleteItemUrl = `${apiBaseUrl}/items/delete/${item._id}`;
     setLoading(true);
     axios
@@ -148,7 +159,7 @@ const App = () => {
       });
   };
 
-  const moveItemToList = (item, listId) => {
+  const moveItemToList = (item: TListItem, listId: string) => {
     const updateItemUrl = `${apiBaseUrl}/items/update/${item._id}`;
     setLoading(true);
     axios
@@ -167,7 +178,7 @@ const App = () => {
       });
   };
 
-  const getRelatedArtists = (artistId) => {
+  const getRelatedArtists = (artistId: string | undefined) => {
     const relatedArtistsUrl = `${apiBaseUrl}/spotify/artist/${artistId}/related`;
     setLoading(true);
     axios
@@ -232,19 +243,23 @@ const App = () => {
       });
   };
 
-  const setArtist = (artist) => {
+  const setArtist = (artist: TArtist) => {
     setActiveArtist(artist);
   };
 
-  const setAlbum = (album) => {
-    setActiveAlbum(album);
+  const setAlbum = (album: TAlbum | null) => {
+    if (!album) {
+      setActiveAlbum({} as TAlbum);
+    } else {
+      setActiveAlbum(album);
+    }
   };
 
-  const constructItemFromState = () => {
+  const constructItemFromState: () => TListItem = () => {
     const artist = {
       id: activeArtist.id,
       name: activeArtist.name,
-      url: activeArtist.external_urls.spotify,
+      url: activeArtist.external_urls?.spotify,
       images: activeArtist.images,
       genres: activeArtist.genres,
     };
@@ -255,7 +270,7 @@ const App = () => {
       album = {
         id: activeAlbum.id,
         name: activeAlbum.name,
-        url: activeAlbum.external_urls.spotify,
+        url: activeAlbum.external_urls?.spotify,
         images: activeAlbum.images,
         releaseDate: activeAlbum.release_date,
         tracks: activeAlbum.total_tracks,
@@ -272,7 +287,7 @@ const App = () => {
 
   const hasActiveArtist = Object.keys(activeArtist).length > 0;
 
-  const addActiveToList = (listId = null) => {
+  const addActiveToList: (listId?: string | null) => void = (listId = null) => {
     if (!hasActiveArtist) {
       return;
     }
@@ -299,12 +314,12 @@ const App = () => {
       .finally(() => setLoading(false));
   };
 
-  const onSetGenres = (genres) => {
+  const onSetGenres = (genres: TGenre[]) => {
     setActiveGenres(genres);
   };
 
-  const handleError = (error) => {
-    let messages = '';
+  const handleError = (error: AxiosError<Record<string, never>>) => {
+    let messages: string | string[] = '';
     if (error.response) {
       console.log(error.response);
       if (error.response.status === 401) {
@@ -313,15 +328,18 @@ const App = () => {
         localStorage.removeItem('token');
         return;
       }
-      if (error.response.data.name === 'ValidationError') {
+      if (error.response.data?.name === 'ValidationError') {
         console.log(error.response.data);
-        messages = Object.values(error.response.data.errors)
-          .filter(Boolean)
+        messages = Object.values<Record<string, never>>(
+          error.response.data.errors
+        )
           .map((msg) => {
-            if (msg.message) {
-              return msg.message;
+            if (msg?.message) {
+              return msg?.message;
             }
-          });
+            return '';
+          })
+          .filter(Boolean);
       } else {
         messages = error.response.statusText;
       }
@@ -473,14 +491,14 @@ const App = () => {
                   >
                     <Box mt={8}>
                       <ArtistInput
-                        value={artistQuery}
+                        artistQuery={artistQuery}
                         showInput={isArtistInputVisible}
                         onInputChange={(text) => setArtistQuery(text)}
                       />
                       <Box mt={4}>{getArtistContent()}</Box>
                       <ActiveArtist
                         artist={activeArtist}
-                        onDismiss={() => setActiveArtist({})}
+                        onDismiss={() => setActiveArtist({} as TArtist)}
                         onAdd={addActiveToList}
                       />
                       <Box my={2}>

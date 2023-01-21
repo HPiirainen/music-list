@@ -40,7 +40,7 @@ export interface MusicListItemProps {
   relatedArtists: TArtist[];
   onDeleteItem: (item: TListItem) => void;
   onMoveItem: (item: TListItem, list: string) => void;
-  onGetRelated: (id: string) => void;
+  onGetRelated: (id: string | undefined) => void;
   onClearRelated: () => void;
 }
 
@@ -113,8 +113,14 @@ const MusicListItem: React.FC<MusicListItemProps> = ({
 
   const getTooltip = () => {
     const locale = 'fi';
-    const created = new Date(item.createdAt).toLocaleString(locale);
-    const updated = new Date(item.updatedAt).toLocaleString(locale);
+    let created = '&ndash;';
+    let updated = '&ndash;';
+    if (item.createdAt) {
+      created = new Date(item.createdAt).toLocaleString(locale);
+    }
+    if (item.updatedAt) {
+      updated = new Date(item.updatedAt).toLocaleString(locale);
+    }
     return (
       <>
         Created: {created}

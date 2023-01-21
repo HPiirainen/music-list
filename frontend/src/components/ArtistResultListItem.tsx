@@ -12,7 +12,7 @@ import GenreList from './GenreList';
 import { TArtist } from '../types/types';
 
 interface ArtistResultListItemProps {
-  key: Key;
+  key: Key | null | undefined;
   artist: TArtist;
   showGenres: boolean;
   onSelectArtist?: (artist: TArtist) => void;

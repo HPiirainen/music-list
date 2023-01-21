@@ -15,7 +15,7 @@ import { TArtist } from '../types/types';
 
 interface ActiveArtistProps {
   artist: TArtist;
-  onAdd: () => void;
+  onAdd: (listId?: string | null) => void;
   onDismiss: () => void;
 }
 
