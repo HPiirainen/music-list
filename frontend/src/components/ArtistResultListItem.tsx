@@ -4,6 +4,7 @@ import {
   Fade,
   ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemText,
 } from '@mui/material';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
@@ -53,9 +54,9 @@ const ArtistResultListItem: React.FC<ArtistResultListItemProps> = ({
     return (
       <Fade in={true}>
         <Box component="li">
-          <ListItem component="a" onClick={() => onSelectArtist(artist)}>
+          <ListItemButton onClick={() => onSelectArtist(artist)}>
             {content}
-          </ListItem>
+          </ListItemButton>
         </Box>
       </Fade>
     );
