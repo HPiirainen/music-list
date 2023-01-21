@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import { Autocomplete } from '@mui/material';
 import { Box, Fade, TextField, Typography } from '@mui/material';
 import AlbumIcon from '@mui/icons-material/Album';
@@ -8,15 +8,19 @@ import { TAlbum } from '../types/types';
 interface AlbumInputProps {
   showInput: boolean;
   albums: TAlbum[];
-  onSelectAlbum: Dispatch<SetStateAction<TAlbum | null>>;
+  onSelectAlbum: (album: TAlbum | null) => void;
 }
 
-const AlbumInput = ({ showInput, albums, onSelectAlbum }: AlbumInputProps) => {
+const AlbumInput: React.FC<AlbumInputProps> = ({
+  showInput,
+  albums,
+  onSelectAlbum,
+}) => {
   const getYear = (dateString: string | undefined) =>
     dateString ? new Date(dateString).getFullYear() : '';
 
   if (!showInput) {
-    return '';
+    return null;
   }
 
   if (Object.keys(albums).length === 0) {

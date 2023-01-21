@@ -15,7 +15,7 @@ interface MessageProps {
   duration?: number;
 }
 
-const Message = ({ message, onClear, duration }: MessageProps) => {
+const Message: React.FC<MessageProps> = ({ message, onClear, duration }) => {
   const theme = useTheme();
 
   const onClose = (

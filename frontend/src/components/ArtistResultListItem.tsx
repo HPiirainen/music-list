@@ -1,5 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { Key } from 'react';
 import {
   Box,
   Fade,
@@ -10,12 +9,22 @@ import {
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import AvatarImage from './AvatarImage';
 import GenreList from './GenreList';
+import { TArtist } from '../types/types';
 
-const ArtistResultListItem = (props) => {
-  const { artist, showGenres, onSelectArtist } = props;
+interface ArtistResultListItemProps {
+  key: Key;
+  artist: TArtist;
+  showGenres: boolean;
+  onSelectArtist?: (artist: TArtist) => void;
+}
 
+const ArtistResultListItem: React.FC<ArtistResultListItemProps> = ({
+  artist,
+  showGenres,
+  onSelectArtist,
+}) => {
   if (Object.keys(artist).length === 0) {
-    return '';
+    return null;
   }
   const secondaryContent = showGenres ? (
     <GenreList genres={artist.genres} showN={3} />
@@ -44,7 +53,7 @@ const ArtistResultListItem = (props) => {
     return (
       <Fade in={true}>
         <Box component="li">
-          <ListItem button component="a" onClick={() => onSelectArtist(artist)}>
+          <ListItem component="a" onClick={() => onSelectArtist(artist)}>
             {content}
           </ListItem>
         </Box>
@@ -56,12 +65,6 @@ const ArtistResultListItem = (props) => {
       <ListItem>{content}</ListItem>
     </Fade>
   );
-};
-
-ArtistResultListItem.propTypes = {
-  artist: PropTypes.object.isRequired,
-  showGenres: PropTypes.bool.isRequired,
-  onSelectArtist: PropTypes.func,
 };
 
 export default ArtistResultListItem;

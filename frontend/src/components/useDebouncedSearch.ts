@@ -1,17 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import useConstant from 'use-constant';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
-import { useAsync, UseAsyncReturn } from 'react-async-hook';
+import { useAsync } from 'react-async-hook';
 
-interface DebounceResult {
-  inputText: string;
-  setInputText: React.Dispatch<React.SetStateAction<string>>;
-  searchResults: UseAsyncReturn;
-}
-
-const useDebouncedSearch = (
-  searchFunction: (...args: string[]) => DebounceResult
-) => {
+const useDebouncedSearch = (searchFunction: (...args: string[]) => void) => {
   const [inputText, setInputText] = useState('');
 
   const debouncedSearchFunction = useConstant(() =>

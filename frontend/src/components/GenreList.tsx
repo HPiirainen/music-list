@@ -1,11 +1,15 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { TGenre } from '../types/types';
 import Genre from './Genre';
 
-const GenreList = (props) => {
-  const { genres, showN } = props;
+interface GenreListProps {
+  genres: TGenre[];
+  showN: number;
+}
+
+const GenreList: React.FC<GenreListProps> = ({ genres, showN }) => {
   if (!genres) {
-    return '';
+    return null;
   }
 
   const getItems = () => {
@@ -28,11 +32,6 @@ const GenreList = (props) => {
       {getAndMore()}
     </>
   );
-};
-
-GenreList.propTypes = {
-  genres: PropTypes.arrayOf(PropTypes.string).isRequired,
-  showN: PropTypes.number,
 };
 
 export default GenreList;

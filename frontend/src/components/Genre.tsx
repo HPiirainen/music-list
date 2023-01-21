@@ -6,7 +6,7 @@ interface GenreProps {
   genre: TGenre;
 }
 
-const Genre = ({ genre }: GenreProps) => {
+const Genre: React.FC<GenreProps> = ({ genre }) => {
   const theme = useTheme();
   return (
     <Chip

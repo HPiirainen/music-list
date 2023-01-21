@@ -7,7 +7,7 @@ import {
   Typography,
 } from '@mui/material';
 
-type SwitchHandler = (state: boolean, genre?: string) => void;
+type SwitchHandler = (state: boolean, genre: string) => void;
 type Identifier = string | number;
 
 interface ListSwitchProps {
@@ -17,12 +17,12 @@ interface ListSwitchProps {
   onSwitch: SwitchHandler;
 }
 
-const ListSwitch = ({
+const ListSwitch: React.FC<ListSwitchProps> = ({
   identifier,
   label,
   isChecked,
   onSwitch,
-}: ListSwitchProps) => {
+}) => {
   const labelId = `switch-label-${identifier}`;
 
   const sendState = (e: ChangeEvent, checked: boolean) => {

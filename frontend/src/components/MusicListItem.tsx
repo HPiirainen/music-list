@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   Accordion,
   AccordionSummary,
@@ -21,6 +20,7 @@ import {
   Zoom,
   useTheme,
   Box,
+  SxProps,
 } from '@mui/material';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import AlbumIcon from '@mui/icons-material/Album';
@@ -30,19 +30,31 @@ import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import PeopleIcon from '@mui/icons-material/People';
 import AvatarImage from './AvatarImage';
 import ArtistResultListItem from './ArtistResultListItem';
+import { TArtist, TGenre, TList, TListItem } from '../types/types';
 
-const MusicListItem = (props) => {
-  const {
-    item,
-    listActions,
-    activeGenres,
-    relatedArtists,
-    onDeleteItem,
-    onMoveItem,
-    onGetRelated,
-    onClearRelated,
-  } = props;
-  const [selectedList, setSelectedList] = useState(null);
+export interface MusicListItemProps {
+  sx: SxProps;
+  item: TListItem;
+  listActions: TList[];
+  activeGenres: TGenre[];
+  relatedArtists: TArtist[];
+  onDeleteItem: (item: TListItem) => void;
+  onMoveItem: (item: TListItem, list: string) => void;
+  onGetRelated: (id: string) => void;
+  onClearRelated: () => void;
+}
+
+const MusicListItem: React.FC<MusicListItemProps> = ({
+  item,
+  listActions,
+  activeGenres,
+  relatedArtists,
+  onDeleteItem,
+  onMoveItem,
+  onGetRelated,
+  onClearRelated,
+}) => {
+  const [selectedList, setSelectedList] = useState('');
   const [listDialogOpen, setListDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -57,22 +69,24 @@ const MusicListItem = (props) => {
 
   const hasAlbum = () => item.album !== null;
 
-  const getYear = (dateString) => new Date(dateString).getFullYear();
+  const getYear = (dateString: string | undefined) =>
+    new Date(dateString || '').getFullYear();
 
   const getAlbum = () => {
     if (hasAlbum()) {
       return (
         <>
           <AvatarImage
-            images={item.album.images}
-            alt={item.album.name}
+            images={item.album?.images}
+            alt={item.album?.name}
             imageSize="medium"
             fallback={<AlbumIcon sx={{ fontSize: 42 }} />}
           />
           <Typography component="h4" variant="h6">
-            {item.album.name} <small>({getYear(item.album.releaseDate)})</small>
+            {item.album?.name}{' '}
+            <small>({getYear(item.album?.releaseDate)})</small>
           </Typography>
-          <Typography variant="body1">{item.album.tracks} tracks</Typography>
+          <Typography variant="body1">{item.album?.tracks} tracks</Typography>
         </>
       );
     }
@@ -249,17 +263,6 @@ const MusicListItem = (props) => {
       </AccordionActions>
     </Accordion>
   );
-};
-
-MusicListItem.propTypes = {
-  item: PropTypes.object,
-  listActions: PropTypes.array,
-  activeGenres: PropTypes.array,
-  relatedArtists: PropTypes.array,
-  onDeleteItem: PropTypes.func,
-  onMoveItem: PropTypes.func,
-  onGetRelated: PropTypes.func,
-  onClearRelated: PropTypes.func,
 };
 
 export default MusicListItem;

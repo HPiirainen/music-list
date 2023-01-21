@@ -1,4 +1,4 @@
-import React, { Dispatch, FormEvent, SetStateAction, useState } from 'react';
+import React, { FormEvent, useState } from 'react';
 import axios from '../utils/axios';
 import {
   Box,
@@ -15,19 +15,13 @@ type Error = {
   [key: string]: string;
 };
 
-// TODO: Accepts single or multiple strings, could be enhanced.
-// type Message = {
-//   message?: string | string[];
-//   type?: number;
-// };
-
 interface LoginProps {
-  setToken: Dispatch<SetStateAction<string | null>>;
-  setMessage: Dispatch<SetStateAction<TMessage>>;
+  setToken: (token: string | null) => void;
+  setMessage: (message: TMessage) => void;
   loginRoute: string;
 }
 
-const Login = ({ setToken, setMessage, loginRoute }: LoginProps) => {
+const Login: React.FC<LoginProps> = ({ setToken, setMessage, loginRoute }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Error>({});

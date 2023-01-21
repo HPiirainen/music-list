@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import { List, ListSubheader } from '@mui/material';
 import ListSwitch from './ListSwitch';
+import { TGenre } from '../types/types';
 
-const GenreFilter = (props) => {
-  const { genres, activeGenres, genreSetter } = props;
+interface GenreFilterProps {
+  genres: TGenre[];
+  activeGenres: TGenre[];
+  genreSetter: (genre: TGenre[]) => void;
+}
 
+const GenreFilter: React.FC<GenreFilterProps> = ({
+  genres,
+  activeGenres,
+  genreSetter,
+}) => {
   const [allSelected, setAllSelected] = useState(true);
 
   useEffect(() => {
@@ -25,12 +33,12 @@ const GenreFilter = (props) => {
     }
   }, [allSelected]);
 
-  const toggleSelectAll = (state) => {
+  const toggleSelectAll = (state: boolean) => {
     setAllSelected(state);
   };
 
-  const switchGenre = (state, genre) => {
-    let genres;
+  const switchGenre = (state: boolean, genre: TGenre) => {
+    let genres: TGenre[];
     if (state) {
       genres = [...activeGenres, genre];
     } else {
@@ -68,12 +76,6 @@ const GenreFilter = (props) => {
       {listItems}
     </List>
   );
-};
-
-GenreFilter.propTypes = {
-  genres: PropTypes.array,
-  activeGenres: PropTypes.array,
-  genreSetter: PropTypes.func,
 };
 
 export default GenreFilter;

@@ -4,19 +4,19 @@ import { TImage } from '../types/types';
 
 interface AvatarImageProps {
   images: TImage[] | undefined;
-  alt: string;
+  alt?: string;
   fallback: ReactNode;
-  maxWidth: number;
-  imageSize: 'large' | 'medium' | 'small';
+  maxWidth?: number;
+  imageSize?: 'large' | 'medium' | 'small';
 }
 
-const AvatarImage = ({
+const AvatarImage: React.FC<AvatarImageProps> = ({
   images,
   alt,
   fallback,
-  maxWidth,
-  imageSize,
-}: AvatarImageProps) => {
+  maxWidth = 768,
+  imageSize = 'small',
+}) => {
   const theme = useTheme();
 
   const image = images?.find((image) => image.width <= maxWidth);
@@ -29,11 +29,6 @@ const AvatarImage = ({
     return <Avatar sx={imageStyle}>{fallback}</Avatar>;
   }
   return <Avatar alt={alt} src={image.url} sx={imageStyle} />;
-};
-
-AvatarImage.defaultProps = {
-  maxWidth: 768,
-  imageSize: 'small',
 };
 
 export default AvatarImage;

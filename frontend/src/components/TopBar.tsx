@@ -15,7 +15,10 @@ interface TopBarProps {
   appTitle: string;
 }
 
-const TopBar = ({ appTitle, children }: PropsWithChildren<TopBarProps>) => {
+const TopBar: React.FC<PropsWithChildren<TopBarProps>> = ({
+  appTitle,
+  children,
+}) => {
   const theme = useTheme();
 
   const [drawerOpen, setDrawerOpen] = useState(false);

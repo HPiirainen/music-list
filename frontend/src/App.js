@@ -352,6 +352,7 @@ const App = () => {
     }
 
     const tabPanels = lists.map((list) => {
+      console.log(list);
       const listActions = lists.filter((l) => l._id !== list._id);
       return (
         <TabPanel

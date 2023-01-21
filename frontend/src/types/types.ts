@@ -7,6 +7,27 @@ export type TMessage = {
 
 export type TGenre = string;
 
+export type TList = {
+  _id: string;
+  items: TListItem[];
+  isFixed?: boolean;
+  title: string;
+  description?: string;
+  isDefault?: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TListItem = {
+  _id: string;
+  id: string;
+  list: TList;
+  artist: TArtist;
+  album?: TAlbum;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type TImage = {
   _id: string;
   height: number;

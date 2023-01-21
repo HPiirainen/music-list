@@ -1,10 +1,20 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Box, Typography, useTheme } from '@mui/material';
 import MusicListItem from './MusicListItem';
+import { TArtist, TGenre, TList, TListItem } from '../types/types';
 
-const MusicList = (props) => {
-  const { list, ...childProps } = props;
+interface MusicListProps {
+  list: TList;
+  listActions: TList[];
+  activeGenres: TGenre[];
+  relatedArtists: TArtist[];
+  onDeleteItem: (item: TListItem) => void;
+  onMoveItem: (item: TListItem, list: string) => void;
+  onGetRelated: (id: string) => void;
+  onClearRelated: () => void;
+}
+
+const MusicList: React.FC<MusicListProps> = ({ list, ...childProps }) => {
   const theme = useTheme();
 
   // const [hasNextPage, setHasNextPage] = useState(true);
@@ -52,14 +62,6 @@ const MusicList = (props) => {
       {getContent()}
     </Box>
   );
-};
-
-MusicList.propTypes = {
-  list: PropTypes.object,
-  listActions: PropTypes.array,
-  activeGenres: PropTypes.array,
-  onMoveItem: PropTypes.func,
-  onDeleteItem: PropTypes.func,
 };
 
 export default MusicList;

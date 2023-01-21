@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import {
   Button,
   Card,
@@ -15,13 +15,17 @@ import { TArtist } from '../types/types';
 
 interface ActiveArtistProps {
   artist: TArtist;
-  onAdd: Dispatch<SetStateAction<void>>;
-  onDismiss: Dispatch<SetStateAction<void>>;
+  onAdd: () => void;
+  onDismiss: () => void;
 }
 
-const ActiveArtist = ({ artist, onAdd, onDismiss }: ActiveArtistProps) => {
+const ActiveArtist: React.FC<ActiveArtistProps> = ({
+  artist,
+  onAdd,
+  onDismiss,
+}) => {
   if (Object.keys(artist).length === 0) {
-    return '';
+    return null;
   }
 
   return (
