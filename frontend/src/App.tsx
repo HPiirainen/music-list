@@ -44,6 +44,7 @@ import { AxiosError } from 'axios';
 const apiBaseUrl = process.env.REACT_APP_API_URL;
 
 const App = () => {
+  // TODO: no need to check every render.
   const storedToken = localStorage.getItem('token');
   const [jwt, setJwt] = useState<string | null>(storedToken || null);
   const [searchBackdropOpen, setSearchBackdropOpen] = useState<boolean>(false);
@@ -64,6 +65,7 @@ const App = () => {
   const theme = useTheme();
 
   useEffect(() => {
+    console.log('useEffect: jwt');
     if (jwt) {
       loadListItems();
       loadGenres();
@@ -71,26 +73,31 @@ const App = () => {
   }, [jwt]);
 
   useEffect(() => {
+    console.log('useEffect: activeArtist');
     fetchArtistAlbums();
     setArtistQuery('');
   }, [activeArtist]);
 
   useEffect(() => {
+    console.log('useEffect: activeAlbum');
     setAlbums([]);
     addActiveToList(getDefaultListId());
   }, [activeAlbum]);
 
   useEffect(() => {
+    console.log('useEffect: artistQuery');
     fetchArtists();
   }, [artistQuery]);
 
   useEffect(() => {
+    console.log('useEffect: lists');
     if (!activeTab && lists.length) {
       setActiveTab(lists[0]._id);
     }
   }, [lists]);
 
   useEffect(() => {
+    console.log('useEffect: searchBackDropOpen');
     if (!searchBackdropOpen) {
       setArtistResults([]);
       setActiveArtist({} as TArtist);
@@ -348,8 +355,6 @@ const App = () => {
       messages = error.message;
     }
 
-    console.log('setting message', messages);
-
     setMessage({
       message: messages,
       type: 'error',
@@ -425,99 +430,99 @@ const App = () => {
     return <List>{elements}</List>;
   };
 
-  let mainContent;
+  // let mainContent;
 
-  if (jwt === null) {
-    mainContent = (
-      <Login
-        setToken={setJwt}
-        setMessage={setMessage}
-        loginRoute={`${apiBaseUrl}/auth/signin`}
-      />
-    );
-  } else {
-    mainContent = (
-      <Container maxWidth="md" className="app">
-        <Backdrop
-          sx={{
-            zIndex: theme.zIndex.drawer + 2,
-            color: theme.palette.common.white,
-            backgroundColor: alpha(theme.palette.common.black, 0.4),
-          }}
-          open={loading}
-        >
-          <CircularProgress color="inherit" disableShrink />
-        </Backdrop>
-        <Fade in={true} timeout={1000}>
-          <Box my={4}>
-            <Box my={6} display="flex" justifyContent="center">
-              <IconButton
-                aria-label="Open search"
-                color="primary"
-                onClick={() => setSearchBackdropOpen(true)}
-                size="large"
-              >
-                <Search fontSize="large" />
-              </IconButton>
-            </Box>
-            <Backdrop
-              open={searchBackdropOpen}
-              sx={{
-                backgroundColor: theme.palette.common.black,
-                zIndex: theme.zIndex.drawer + 1,
-                alignItems: 'flex-start',
-                flexWrap: 'wrap',
-                overflowY: 'auto',
-              }}
+  // if (jwt === null) {
+  //   mainContent = (
+  //     <Login
+  //       setToken={setJwt}
+  //       setMessage={setMessage}
+  //       loginRoute={`${apiBaseUrl}/auth/signin`}
+  //     />
+  //   );
+  // } else {
+  const mainContent = (
+    <Container maxWidth="md" className="app">
+      <Backdrop
+        sx={{
+          zIndex: theme.zIndex.drawer + 2,
+          color: theme.palette.common.white,
+          backgroundColor: alpha(theme.palette.common.black, 0.4),
+        }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" disableShrink />
+      </Backdrop>
+      <Fade in={true} timeout={1000}>
+        <Box my={4}>
+          <Box my={6} display="flex" justifyContent="center">
+            <IconButton
+              aria-label="Open search"
+              color="primary"
+              onClick={() => setSearchBackdropOpen(true)}
+              size="large"
             >
-              {searchBackdropOpen && (
-                <>
-                  <IconButton
-                    aria-label="Close search"
-                    onClick={() => setSearchBackdropOpen(false)}
-                    sx={{
-                      position: 'absolute',
-                      top: theme.spacing(1),
-                      right: theme.spacing(1),
-                    }}
-                    size="large"
-                  >
-                    <Close fontSize="large" />
-                  </IconButton>
-                  <Container
-                    maxWidth="sm"
-                    sx={{ height: '100%', textAlign: 'center' }}
-                  >
-                    <Box mt={8}>
-                      <ArtistInput
-                        artistQuery={artistQuery}
-                        showInput={isArtistInputVisible}
-                        onInputChange={(text) => setArtistQuery(text)}
-                      />
-                      <Box mt={4}>{getArtistContent()}</Box>
-                      <ActiveArtist
-                        artist={activeArtist}
-                        onDismiss={() => setActiveArtist({} as TArtist)}
-                        onAdd={addActiveToList}
-                      />
-                      <Box my={2}>
-                        <AlbumInput
-                          albums={albums}
-                          showInput={isAlbumInputVisible}
-                          onSelectAlbum={setAlbum}
-                        />
-                      </Box>
-                    </Box>
-                  </Container>
-                </>
-              )}
-            </Backdrop>
-            {getListContent()}
+              <Search fontSize="large" />
+            </IconButton>
           </Box>
-        </Fade>
-      </Container>
-    );
-  }
+          <Backdrop
+            open={searchBackdropOpen}
+            sx={{
+              backgroundColor: theme.palette.common.black,
+              zIndex: theme.zIndex.drawer + 1,
+              alignItems: 'flex-start',
+              flexWrap: 'wrap',
+              overflowY: 'auto',
+            }}
+          >
+            {searchBackdropOpen && (
+              <>
+                <IconButton
+                  aria-label="Close search"
+                  onClick={() => setSearchBackdropOpen(false)}
+                  sx={{
+                    position: 'absolute',
+                    top: theme.spacing(1),
+                    right: theme.spacing(1),
+                  }}
+                  size="large"
+                >
+                  <Close fontSize="large" />
+                </IconButton>
+                <Container
+                  maxWidth="sm"
+                  sx={{ height: '100%', textAlign: 'center' }}
+                >
+                  <Box mt={8}>
+                    <ArtistInput
+                      artistQuery={artistQuery}
+                      showInput={isArtistInputVisible}
+                      onInputChange={(text) => setArtistQuery(text)}
+                    />
+                    <Box mt={4}>{getArtistContent()}</Box>
+                    <ActiveArtist
+                      artist={activeArtist}
+                      onDismiss={() => setActiveArtist({} as TArtist)}
+                      onAdd={addActiveToList}
+                    />
+                    <Box my={2}>
+                      <AlbumInput
+                        albums={albums}
+                        showInput={isAlbumInputVisible}
+                        onSelectAlbum={setAlbum}
+                      />
+                    </Box>
+                  </Box>
+                </Container>
+              </>
+            )}
+          </Backdrop>
+          {getListContent()}
+        </Box>
+      </Fade>
+    </Container>
+  );
+  // }
 
   return (
     <ThemeProvider theme={Theme}>

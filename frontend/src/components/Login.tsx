@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from 'react';
+import React, { FormEvent, useEffect, useState } from 'react';
 import axios from '../utils/axios';
 import {
   Box,
@@ -10,6 +10,8 @@ import {
   Typography,
 } from '@mui/material';
 import { TMessage } from '../types/types';
+import { useAuth } from '../hooks/useAuth';
+import { Navigate } from 'react-router-dom';
 
 type Error = {
   [key: string]: string;
@@ -21,10 +23,18 @@ interface LoginProps {
   loginRoute: string;
 }
 
-const Login: React.FC<LoginProps> = ({ setToken, setMessage, loginRoute }) => {
+// const Login: React.FC<LoginProps> = ({ setToken, setMessage, loginRoute }) => {
+const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Error>({});
+
+  const { user, login } = useAuth();
+
+  // Login if token already exists.
+  if (user?.token) {
+    return <Navigate to="/" />;
+  }
 
   const hasError = (field: string) => {
     if ('message' in errors && errors.message) {
@@ -38,32 +48,35 @@ const Login: React.FC<LoginProps> = ({ setToken, setMessage, loginRoute }) => {
 
   const signIn = (e: FormEvent) => {
     e.preventDefault();
-    axios
-      .post(loginRoute, {
-        email,
-        password,
-      })
-      .then((response) => {
-        const { token } = response.data;
-        localStorage.setItem('token', token);
-        setToken(token);
-        setMessage({
-          message: 'Login successful!',
-          type: 'success',
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-        if (err.response.data.errors) {
-          setMessage({
-            message: Object.values<string>(err.response.data.errors).filter(
-              Boolean
-            ),
-            type: 'error',
-          });
-          setErrors(err.response.data.errors);
-        }
-      });
+    login({
+      email,
+      password,
+    });
+    // axios
+    //   .post(loginRoute, {
+    //     email,
+    //     password,
+    //   })
+    //   .then((response) => {
+    //     const { token } = response.data;
+    //     localStorage.setItem('token', token);
+    //     setToken(token);
+    //     setMessage({
+    //       message: 'Login successful!',
+    //       type: 'success',
+    //     });
+    //   })
+    //   .catch((err) => {
+    //     if (err.response.data.errors) {
+    //       setMessage({
+    //         message: Object.values<string>(err.response.data.errors).filter(
+    //           Boolean
+    //         ),
+    //         type: 'error',
+    //       });
+    //       setErrors(err.response.data.errors);
+    //     }
+    //   });
   };
 
   return (
