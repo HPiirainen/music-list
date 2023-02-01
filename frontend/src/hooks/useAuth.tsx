@@ -2,7 +2,6 @@ import React, {
   createContext,
   PropsWithChildren,
   useContext,
-  useEffect,
   useMemo,
 } from 'react';
 import { useLocalStorage } from './useLocalStorage';
@@ -25,6 +24,7 @@ export interface IAuthContext {
 const apiBaseUrl = process.env.REACT_APP_API_URL;
 
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
+AuthContext.displayName = 'AuthContext';
 
 export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [user, setUser] = useLocalStorage<IUser | null>(
@@ -32,13 +32,6 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
     null
   );
   const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   const user = getItem(localStorageKey);
-  //   if (user) {
-  //     addUser(JSON.parse(user));
-  //   }
-  // }, []);
 
   const login = async (user: IUser) => {
     const { email, password } = user;

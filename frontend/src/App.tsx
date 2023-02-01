@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import axios from './utils/axios';
 import Theme from './utils/theme';
 import { ThemeProvider } from '@mui/material/styles';
@@ -22,7 +22,6 @@ import Close from '@mui/icons-material/Close';
 // import { FixedSizeList } from 'react-window';
 // import { InfiniteLoader } from 'react-window-infinite-loader';
 import TopBar from './components/TopBar';
-import Login from './components/Login';
 import GenreFilter from './components/GenreFilter';
 import ArtistInput from './components/ArtistInput';
 import ArtistResultListItem from './components/ArtistResultListItem';
@@ -39,14 +38,61 @@ import {
   TMessage,
 } from './types/types';
 import './utils/fonts';
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosResponse } from 'axios';
+import { useAuth } from './hooks/useAuth';
+
+enum AppStateActionType {
+  SET_STATUS = 'set_status',
+}
+
+enum AppStateStatus {
+  IDLE = 'idle',
+  LOADING = 'loading',
+  ERROR = 'error',
+  READY = 'ready',
+}
+
+interface AppState {
+  status: AppStateStatus;
+}
+
+interface AppStateAction {
+  type: AppStateActionType;
+  payload: AppStateStatus;
+}
+
+interface ErrorData {
+  name: string;
+  errors: Record<string, never>;
+}
 
 const apiBaseUrl = process.env.REACT_APP_API_URL;
 
-const App = () => {
-  // TODO: no need to check every render.
-  const storedToken = localStorage.getItem('token');
-  const [jwt, setJwt] = useState<string | null>(storedToken || null);
+function createInitialAppState(): AppState {
+  return {
+    status: AppStateStatus.IDLE,
+  };
+}
+
+const appStateReducer = (state: AppState, action: AppStateAction) => {
+  const { type, payload } = action;
+  console.log('reducer', type, payload);
+  if (type === AppStateActionType.SET_STATUS) {
+    return {
+      ...state,
+      status: payload,
+    };
+  }
+  throw new Error('Unknown appStateReducer action type: ' + action.type);
+};
+
+const App: React.FC = () => {
+  // Handles loading status etc.
+  const [appState, dispatchAppState] = useReducer(
+    appStateReducer,
+    null,
+    createInitialAppState
+  );
   const [searchBackdropOpen, setSearchBackdropOpen] = useState<boolean>(false);
   const [lists, setLists] = useState<TList[]>([]);
   const [genres, setGenres] = useState<TGenre[]>([]);
@@ -57,57 +103,127 @@ const App = () => {
   const [albums, setAlbums] = useState<TAlbum[]>([]);
   const [artistQuery, setArtistQuery] = useState<string>('');
   const [relatedArtists, setRelatedArtists] = useState<TArtist[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
   const [loadingAlbums, setLoadingAlbums] = useState<boolean>(false);
   const [message, setMessage] = useState<TMessage | Record<string, never>>({});
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
+  const { user, logout } = useAuth();
   const theme = useTheme();
 
-  useEffect(() => {
-    console.log('useEffect: jwt');
-    if (jwt) {
-      loadListItems();
-      loadGenres();
-    }
-  }, [jwt]);
+  const appIsIdle = appState.status === AppStateStatus.IDLE;
+  const appIsLoading = appState.status === AppStateStatus.LOADING;
+  const appIsReady = appState.status === AppStateStatus.READY;
+  const appIsError = appState.status === AppStateStatus.ERROR;
 
   useEffect(() => {
-    console.log('useEffect: activeArtist');
-    fetchArtistAlbums();
-    setArtistQuery('');
-  }, [activeArtist]);
+    console.log('useEffect: initial');
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const fetchData = async () => {
+      dispatchAppState({
+        type: AppStateActionType.SET_STATUS,
+        payload: AppStateStatus.LOADING,
+      });
+      const options = { signal };
+      try {
+        await Promise.all<AxiosResponse>([
+          axios.get(`${apiBaseUrl}/items/genres`, options),
+          axios.get(`${apiBaseUrl}/lists`, options),
+          axios.get(`${apiBaseUrl}/items`, options),
+        ]).then(([{ data: genres }, { data: lists }, { data: items }]) => {
+          const newLists = lists.map((list: TList) => {
+            const listItems = items.filter(
+              (item: TListItem) => item.list === list._id
+            );
+            return { ...list, items: listItems };
+          });
+          setLists(newLists);
+          setGenres(genres);
+          dispatchAppState({
+            type: AppStateActionType.SET_STATUS,
+            payload: AppStateStatus.READY,
+          });
+        });
+      } catch (error) {
+        if (axios.isCancel(error)) {
+          console.log('Request canceled', error);
+        } else if (error instanceof Error) {
+          handleError(error);
+        }
+      }
+    };
 
-  useEffect(() => {
-    console.log('useEffect: activeAlbum');
-    setAlbums([]);
-    addActiveToList(getDefaultListId());
-  }, [activeAlbum]);
+    fetchData();
 
-  useEffect(() => {
-    console.log('useEffect: artistQuery');
-    fetchArtists();
-  }, [artistQuery]);
+    return () => controller.abort();
+  }, []);
 
-  useEffect(() => {
-    console.log('useEffect: lists');
-    if (!activeTab && lists.length) {
-      setActiveTab(lists[0]._id);
-    }
-  }, [lists]);
+  // useEffect(() => {
+  //   console.log('useEffect: jwt');
+  //   if (jwt) {
+  //     loadListItems();
+  //     loadGenres();
+  //   }
+  // }, [jwt]);
 
-  useEffect(() => {
-    console.log('useEffect: searchBackDropOpen');
-    if (!searchBackdropOpen) {
-      setArtistResults([]);
-      setActiveArtist({} as TArtist);
-      setAlbums([]);
-      setActiveAlbum({} as TAlbum);
-    }
-  }, [searchBackdropOpen]);
+  // useEffect(() => {
+  //   console.log('useEffect: activeArtist');
+  //   fetchArtistAlbums();
+  //   setArtistQuery('');
+  // }, [activeArtist]);
+
+  // useEffect(() => {
+  //   console.log('useEffect: activeAlbum');
+  //   setAlbums([]);
+  //   addActiveToList(getDefaultListId());
+  // }, [activeAlbum]);
+
+  // useEffect(() => {
+  //   console.log('useEffect: artistQuery');
+  //   fetchArtists();
+  // }, [artistQuery]);
+
+  // useEffect(() => {
+  //   console.log('useEffect: lists');
+  //   if (!activeTab && lists.length) {
+  //     setActiveTab(lists[0]._id);
+  //   }
+  // }, [lists]);
+
+  // useEffect(() => {
+  //   console.log('useEffect: searchBackDropOpen');
+  //   if (!searchBackdropOpen) {
+  //     setArtistResults([]);
+  //     setActiveArtist({} as TArtist);
+  //     setAlbums([]);
+  //     setActiveAlbum({} as TAlbum);
+  //   }
+  // }, [searchBackdropOpen]);
+
+  const loadGenres = () => {
+    dispatchAppState({
+      type: AppStateActionType.SET_STATUS,
+      payload: AppStateStatus.LOADING,
+    });
+    axios
+      .get(`${apiBaseUrl}/items/genres`)
+      .then((response) => {
+        setGenres(response.data);
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.READY,
+        });
+      })
+      .catch((error) => {
+        handleError(error);
+      });
+  };
 
   const loadListItems = async () => {
-    setLoading(true);
+    dispatchAppState({
+      type: AppStateActionType.SET_STATUS,
+      payload: AppStateStatus.LOADING,
+    });
     const readListsUrl = `${apiBaseUrl}/lists`;
     const readItemsUrl = `${apiBaseUrl}/items`;
     Promise.all([axios.get(readListsUrl), axios.get(readItemsUrl)])
@@ -121,24 +237,18 @@ const App = () => {
             return { ...list, items };
           });
           setLists(lists);
+          dispatchAppState({
+            type: AppStateActionType.SET_STATUS,
+            payload: AppStateStatus.READY,
+          });
         })
       )
       .catch((error) => {
         handleError(error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
-
-  const loadGenres = () => {
-    axios
-      .get(`${apiBaseUrl}/items/genres`)
-      .then((response) => {
-        setGenres(response.data);
-      })
-      .catch((error) => {
-        handleError(error);
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.ERROR,
+        });
       });
   };
 
@@ -149,7 +259,10 @@ const App = () => {
 
   const deleteItem = (item: TListItem) => {
     const deleteItemUrl = `${apiBaseUrl}/items/delete/${item._id}`;
-    setLoading(true);
+    dispatchAppState({
+      type: AppStateActionType.SET_STATUS,
+      payload: AppStateStatus.LOADING,
+    });
     axios
       .delete(deleteItemUrl)
       .then(() => {
@@ -159,16 +272,26 @@ const App = () => {
           message: 'Item deleted successfully!',
           type: 'success',
         });
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.READY,
+        });
       })
       .catch((error) => {
         handleError(error);
-        setLoading(false);
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.ERROR,
+        });
       });
   };
 
   const moveItemToList = (item: TListItem, listId: string) => {
     const updateItemUrl = `${apiBaseUrl}/items/update/${item._id}`;
-    setLoading(true);
+    dispatchAppState({
+      type: AppStateActionType.SET_STATUS,
+      payload: AppStateStatus.LOADING,
+    });
     axios
       .put(updateItemUrl, { list: listId })
       .then(() => {
@@ -178,16 +301,26 @@ const App = () => {
           message: 'Item updated successfully!',
           type: 'success',
         });
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.READY,
+        });
       })
       .catch((error) => {
         handleError(error);
-        setLoading(false);
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.ERROR,
+        });
       });
   };
 
   const getRelatedArtists = (artistId: string | undefined) => {
     const relatedArtistsUrl = `${apiBaseUrl}/spotify/artist/${artistId}/related`;
-    setLoading(true);
+    dispatchAppState({
+      type: AppStateActionType.SET_STATUS,
+      payload: AppStateStatus.LOADING,
+    });
     axios
       .get(relatedArtistsUrl)
       .then((response) => {
@@ -199,12 +332,17 @@ const App = () => {
         } else {
           setRelatedArtists(response.data);
         }
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.READY,
+        });
       })
       .catch((error) => {
         handleError(error);
-      })
-      .finally(() => {
-        setLoading(false);
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.ERROR,
+        });
       });
   };
 
@@ -235,18 +373,26 @@ const App = () => {
       // better way to do this?
       return;
     }
-    setLoadingAlbums(true);
+    dispatchAppState({
+      type: AppStateActionType.SET_STATUS,
+      payload: AppStateStatus.LOADING,
+    });
     const albumSearchUrl = `${apiBaseUrl}/spotify/artist/${activeArtist.id}/albums`;
     axios
       .get(albumSearchUrl)
       .then((response) => {
         setAlbums(response.data);
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.READY,
+        });
       })
       .catch((error) => {
         handleError(error);
-      })
-      .finally(() => {
-        setLoadingAlbums(false);
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.ERROR,
+        });
       });
   };
 
@@ -300,7 +446,10 @@ const App = () => {
     }
     const item = constructItemFromState();
     item.list = listId || getDefaultListId();
-    setLoading(true);
+    dispatchAppState({
+      type: AppStateActionType.SET_STATUS,
+      payload: AppStateStatus.LOADING,
+    });
     const createItemUrl = `${apiBaseUrl}/items/create`;
     axios
       .post(createItemUrl, item)
@@ -314,50 +463,52 @@ const App = () => {
           message: 'Item added successfully!',
           type: 'success',
         });
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.READY,
+        });
       })
       .catch((error) => {
         handleError(error);
-      })
-      .finally(() => setLoading(false));
+        dispatchAppState({
+          type: AppStateActionType.SET_STATUS,
+          payload: AppStateStatus.ERROR,
+        });
+      });
   };
 
   const onSetGenres = (genres: TGenre[]) => {
     setActiveGenres(genres);
   };
 
-  const handleError = (error: AxiosError<Record<string, never>>) => {
+  const handleError = (error: Error) => {
     let messages: string | string[] = '';
-    if (error.response) {
-      console.log(error.response);
-      if (error.response.status === 401) {
-        // Unauthorized, which means our token has expired.
-        setJwt(null);
-        localStorage.removeItem('token');
-        return;
-      }
-      if (error.response.data?.name === 'ValidationError') {
-        console.log(error.response.data);
-        messages = Object.values<Record<string, never>>(
-          error.response.data.errors
-        )
-          .map((msg) => {
-            if (msg?.message) {
-              return msg?.message;
-            }
-            return '';
-          })
-          .filter(Boolean);
-      } else {
-        messages = error.response.statusText;
-      }
+    const axiosError = error as AxiosError;
+    if (axiosError.response?.status === 401) {
+      // Unauthorized, which means our token has expired.
+      // setJwt(null);
+      // localStorage.removeItem('token');
+      // logout();
+      return;
+    }
+
+    const data = axiosError.response?.data as ErrorData;
+    if (data?.name === 'ValidationError') {
+      messages = Object.values<Record<string, never>>(data?.errors).map(
+        (msg) => msg?.message || 'Unknown error'
+      );
     } else {
-      // Other error, show generic error message
-      messages = error.message;
+      messages = axiosError.response?.statusText || error.message;
     }
 
     setMessage({
       message: messages,
       type: 'error',
+    });
+
+    dispatchAppState({
+      type: AppStateActionType.SET_STATUS,
+      payload: AppStateStatus.ERROR,
     });
   };
 
@@ -430,17 +581,6 @@ const App = () => {
     return <List>{elements}</List>;
   };
 
-  // let mainContent;
-
-  // if (jwt === null) {
-  //   mainContent = (
-  //     <Login
-  //       setToken={setJwt}
-  //       setMessage={setMessage}
-  //       loginRoute={`${apiBaseUrl}/auth/signin`}
-  //     />
-  //   );
-  // } else {
   const mainContent = (
     <Container maxWidth="md" className="app">
       <Backdrop
@@ -449,7 +589,7 @@ const App = () => {
           color: theme.palette.common.white,
           backgroundColor: alpha(theme.palette.common.black, 0.4),
         }}
-        open={loading}
+        open={appIsLoading}
       >
         <CircularProgress color="inherit" disableShrink />
       </Backdrop>
@@ -534,6 +674,7 @@ const App = () => {
             genreSetter={onSetGenres}
           />
         </TopBar>
+        {appState.status}
         {mainContent}
         <Message message={message} onClear={clearMessage}></Message>
       </CssBaseline>

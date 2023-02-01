@@ -1,5 +1,4 @@
-import React, { FormEvent, useEffect, useState } from 'react';
-import axios from '../utils/axios';
+import React, { FormEvent, useState } from 'react';
 import {
   Box,
   Button,
@@ -9,7 +8,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { TMessage } from '../types/types';
 import { useAuth } from '../hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 
@@ -17,13 +15,6 @@ type Error = {
   [key: string]: string;
 };
 
-interface LoginProps {
-  setToken: (token: string | null) => void;
-  setMessage: (message: TMessage) => void;
-  loginRoute: string;
-}
-
-// const Login: React.FC<LoginProps> = ({ setToken, setMessage, loginRoute }) => {
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,31 +43,6 @@ const Login: React.FC = () => {
       email,
       password,
     });
-    // axios
-    //   .post(loginRoute, {
-    //     email,
-    //     password,
-    //   })
-    //   .then((response) => {
-    //     const { token } = response.data;
-    //     localStorage.setItem('token', token);
-    //     setToken(token);
-    //     setMessage({
-    //       message: 'Login successful!',
-    //       type: 'success',
-    //     });
-    //   })
-    //   .catch((err) => {
-    //     if (err.response.data.errors) {
-    //       setMessage({
-    //         message: Object.values<string>(err.response.data.errors).filter(
-    //           Boolean
-    //         ),
-    //         type: 'error',
-    //       });
-    //       setErrors(err.response.data.errors);
-    //     }
-    //   });
   };
 
   return (
