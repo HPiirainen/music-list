@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function useLocalStorage<T>(
   key: string,
-  initialValue?: T
+  initialValueFactory?: () => T
 ): [T, (newValue: T) => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
@@ -11,25 +11,26 @@ export function useLocalStorage<T>(
       if (value) {
         return JSON.parse(value);
       } else {
+        const initialValue = initialValueFactory ? initialValueFactory() : '';
         window.localStorage.setItem(key, JSON.stringify(initialValue));
         console.log('setting initial value');
         return initialValue;
       }
     } catch (error) {
-      console.error(`Problem getting localStorage key ${key}`);
-      return initialValue;
+      console.error(`Problem getting localStorage key ${key}`, error);
+      return initialValueFactory ? initialValueFactory() : undefined;
     }
   });
 
-  const setValue = (newValue: T) => {
+  useEffect(() => {
     try {
-      console.log('setting localStorage setValue');
-      window.localStorage.setItem(key, JSON.stringify(newValue));
+      window.localStorage.setItem(key, JSON.stringify(storedValue));
     } catch (error) {
-      console.error(`Problem setting localStorage key ${key} to`, newValue);
+      console.error(`Problem setting localStorage key ${key} to`, storedValue);
     }
-    setStoredValue(newValue);
-  };
+  }, [key, storedValue]);
+
+  const setValue = (newValue: T) => setStoredValue(newValue);
 
   return [storedValue, setValue];
 }

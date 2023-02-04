@@ -21,34 +21,30 @@ export interface IAuthContext {
   logout: () => void;
 }
 
+// TODO: add types to envs with dotenv + @types/dotenv?
 const apiBaseUrl = process.env.REACT_APP_API_URL;
 
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 AuthContext.displayName = 'AuthContext';
 
 export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
-  const [user, setUser] = useLocalStorage<IUser | null>(
-    'music-list:user',
-    null
-  );
+  const [user, setUser] = useLocalStorage<IUser | null>('music-list:user');
   const navigate = useNavigate();
 
   const login = async (user: IUser) => {
-    const { email, password } = user;
-    axios
-      .post(`${apiBaseUrl}/auth/signin`, {
+    try {
+      const { email, password } = user;
+      const response = await axios.post(`${apiBaseUrl}/auth/signin`, {
         email,
         password,
-      })
-      .then((response) => {
-        const { token } = response.data;
-        const newUser = { email, token };
-        setUser(newUser);
-        navigate('/');
-      })
-      .catch((error) => {
-        console.error(error);
       });
+      const { token } = response.data;
+      const newUser = { email, token };
+      setUser(newUser);
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const logout = () => {

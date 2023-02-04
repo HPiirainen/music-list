@@ -1,5 +1,5 @@
 import React from 'react';
-import useDebouncedSearch from './useDebouncedSearch';
+import useDebouncedSearch from '../hooks/useDebouncedSearch';
 import { Fade, TextField, useTheme } from '@mui/material';
 
 interface ArtistInputProps {

@@ -2,6 +2,7 @@ import axios, { AxiosHeaders } from 'axios';
 
 const apiBaseUrl = process.env.REACT_APP_API_URL ?? '';
 
+// TODO: caching
 axios.interceptors.request.use(
   (config) => {
     const { origin } = new URL(config.url ?? '');

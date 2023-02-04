@@ -18,6 +18,7 @@ type Error = {
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // TODO: move error message to useAuth and return it here?
   const [errors, setErrors] = useState<Error>({});
 
   const { user, login } = useAuth();
