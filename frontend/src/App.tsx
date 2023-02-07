@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer, useMemo } from 'react';
 import axios from './utils/axios';
 import Theme from './utils/theme';
 import { ThemeProvider } from '@mui/material/styles';
@@ -40,6 +40,7 @@ import {
 import './utils/fonts';
 import { AxiosError, AxiosResponse } from 'axios';
 import { useAuth } from './hooks/useAuth';
+import MusicListItem from './components/MusicListItem';
 
 enum AppStateActionType {
   SET_STATUS = 'set_status',
@@ -52,6 +53,13 @@ enum AppStateStatus {
   READY = 'ready',
 }
 
+enum SearchStateActionType {
+  SET_BACKDROP_OPEN = 'set_backdrop_open',
+  SET_RESULTS = 'set_results',
+  SET_ARTIST = 'set_artist',
+  SET_ALBUM = 'set_album',
+}
+
 interface AppState {
   status: AppStateStatus;
 }
@@ -59,6 +67,18 @@ interface AppState {
 interface AppStateAction {
   type: AppStateActionType;
   payload: AppStateStatus;
+}
+
+interface SearchState {
+  backdropOpen: boolean;
+  results: TArtist[];
+  artist?: TArtist;
+  album?: TAlbum;
+}
+
+interface SearchStateAction {
+  type: SearchStateActionType;
+  payload?: any; // TODO: type this
 }
 
 interface ErrorData {
@@ -74,9 +94,16 @@ function createInitialAppState(): AppState {
   };
 }
 
+function createInitialSearchState(): SearchState {
+  return {
+    backdropOpen: false,
+    results: [],
+  };
+}
+
 const appStateReducer = (state: AppState, action: AppStateAction) => {
   const { type, payload } = action;
-  console.log('reducer', type, payload);
+  console.log('appReducer', type, payload);
   if (type === AppStateActionType.SET_STATUS) {
     return {
       ...state,
@@ -86,12 +113,56 @@ const appStateReducer = (state: AppState, action: AppStateAction) => {
   throw new Error('Unknown appStateReducer action type: ' + action.type);
 };
 
+const searchStateReducer = (state: SearchState, action: SearchStateAction) => {
+  const { type, payload } = action;
+  console.log('searchReducer', type, payload);
+  let newState;
+  switch (type) {
+    case SearchStateActionType.SET_BACKDROP_OPEN:
+      return {
+        ...state,
+        backdropOpen: payload,
+      };
+    case SearchStateActionType.SET_RESULTS:
+      newState = {
+        results: payload,
+        album: undefined,
+        artist: undefined,
+      };
+      return {
+        ...state,
+        ...newState,
+      };
+    case SearchStateActionType.SET_ARTIST:
+      newState = {
+        artist: payload,
+        album: undefined,
+      };
+      return {
+        ...state,
+        ...newState,
+      };
+    case SearchStateActionType.SET_ALBUM:
+      return {
+        ...state,
+        album: payload,
+      };
+    default:
+      throw new Error('Unknown searchStateReducer action type: ' + action.type);
+  }
+};
+
 const App: React.FC = () => {
   // Handles loading status etc.
   const [appState, dispatchAppState] = useReducer(
     appStateReducer,
     null,
     createInitialAppState
+  );
+  const [searchState, dispatchSearchState] = useReducer(
+    searchStateReducer,
+    null,
+    createInitialSearchState
   );
   const [searchBackdropOpen, setSearchBackdropOpen] = useState<boolean>(false);
   const [lists, setLists] = useState<TList[]>([]);
@@ -101,7 +172,6 @@ const App: React.FC = () => {
   const [artistResults, setArtistResults] = useState<TArtist[]>([]);
   const [activeAlbum, setActiveAlbum] = useState<TAlbum>({} as TAlbum);
   const [albums, setAlbums] = useState<TAlbum[]>([]);
-  const [artistQuery, setArtistQuery] = useState<string>('');
   const [relatedArtists, setRelatedArtists] = useState<TArtist[]>([]);
   const [loadingAlbums, setLoadingAlbums] = useState<boolean>(false);
   const [message, setMessage] = useState<TMessage | Record<string, never>>({});
@@ -139,6 +209,9 @@ const App: React.FC = () => {
           });
           setLists(newLists);
           setGenres(genres);
+          if (lists.length > 0) {
+            setActiveTab(lists[0]._id);
+          }
           dispatchAppState({
             type: AppStateActionType.SET_STATUS,
             payload: AppStateStatus.READY,
@@ -182,6 +255,11 @@ const App: React.FC = () => {
   //   console.log('useEffect: artistQuery');
   //   fetchArtists();
   // }, [artistQuery]);
+
+  // useEffect(() => {
+  //   console.log('useEffect: searchState.query');
+  //   fetchArtists();
+  // }, [searchState.query]);
 
   // useEffect(() => {
   //   console.log('useEffect: lists');
@@ -350,26 +428,33 @@ const App: React.FC = () => {
     setRelatedArtists([]);
   };
 
-  const fetchArtists = () => {
-    if (artistQuery.length === 0) {
-      setArtistResults([]);
+  const fetchArtists = async (text: string) => {
+    if (text.length === 0) {
+      dispatchSearchState({
+        type: SearchStateActionType.SET_RESULTS,
+        payload: [],
+      });
       return;
     }
     const artistSearchUrl = `${apiBaseUrl}/spotify/artist/${encodeURIComponent(
-      artistQuery
+      text
     )}`;
-    axios
-      .get(artistSearchUrl)
-      .then((response) => {
-        setArtistResults(response.data);
-      })
-      .catch((error) => {
-        handleError(error);
+    try {
+      // TODO: use AbortController
+      const response = await axios.get(artistSearchUrl);
+      dispatchSearchState({
+        type: SearchStateActionType.SET_RESULTS,
+        payload: response.data,
       });
+    } catch (error) {
+      if (error instanceof Error) {
+        handleError(error);
+      }
+    }
   };
 
   const fetchArtistAlbums = () => {
-    if (Object.keys(activeArtist).length === 0) {
+    if (Object.keys(searchState.artist).length === 0) {
       // better way to do this?
       return;
     }
@@ -377,7 +462,7 @@ const App: React.FC = () => {
       type: AppStateActionType.SET_STATUS,
       payload: AppStateStatus.LOADING,
     });
-    const albumSearchUrl = `${apiBaseUrl}/spotify/artist/${activeArtist.id}/albums`;
+    const albumSearchUrl = `${apiBaseUrl}/spotify/artist/${searchState.artist.id}/albums`;
     axios
       .get(albumSearchUrl)
       .then((response) => {
@@ -396,37 +481,25 @@ const App: React.FC = () => {
       });
   };
 
-  const setArtist = (artist: TArtist) => {
-    setActiveArtist(artist);
-  };
-
-  const setAlbum = (album: TAlbum | null) => {
-    if (!album) {
-      setActiveAlbum({} as TAlbum);
-    } else {
-      setActiveAlbum(album);
-    }
-  };
-
   const constructItemFromState: () => TListItem = () => {
     const artist = {
-      id: activeArtist.id,
-      name: activeArtist.name,
-      url: activeArtist.external_urls?.spotify,
-      images: activeArtist.images,
-      genres: activeArtist.genres,
+      id: searchState.artist.id,
+      name: searchState.artist.name,
+      url: searchState.artist.external_urls?.spotify,
+      images: searchState.artist.images,
+      genres: searchState.artist.genres,
     };
 
     let album = null;
 
     if (hasActiveAlbum) {
       album = {
-        id: activeAlbum.id,
-        name: activeAlbum.name,
-        url: activeAlbum.external_urls?.spotify,
-        images: activeAlbum.images,
-        releaseDate: activeAlbum.release_date,
-        tracks: activeAlbum.total_tracks,
+        id: searchState.album.id,
+        name: searchState.album.name,
+        url: searchState.album.external_urls?.spotify,
+        images: searchState.album.images,
+        releaseDate: searchState.album.release_date,
+        tracks: searchState.album.total_tracks,
       };
     }
 
@@ -436,9 +509,8 @@ const App: React.FC = () => {
     };
   };
 
-  const hasActiveAlbum = Object.keys(activeAlbum).length > 0;
-
-  const hasActiveArtist = Object.keys(activeArtist).length > 0;
+  const hasActiveAlbum = typeof searchState.album !== 'undefined';
+  const hasActiveArtist = typeof searchState.artist !== 'undefined';
 
   const addActiveToList: (listId?: string | null) => void = (listId = null) => {
     if (!hasActiveArtist) {
@@ -458,6 +530,10 @@ const App: React.FC = () => {
         // setActiveAlbum({});
         loadListItems();
         loadGenres();
+        dispatchSearchState({
+          type: SearchStateActionType.SET_BACKDROP_OPEN,
+          payload: false,
+        });
         setSearchBackdropOpen(false);
         setMessage({
           message: 'Item added successfully!',
@@ -520,22 +596,14 @@ const App: React.FC = () => {
 
   const isAlbumInputVisible = hasActiveArtist && !loadingAlbums;
 
-  const getListContent = () => {
-    if (!activeTab) {
-      return null;
-    }
-
-    const tabPanels = lists.map((list) => {
+  const tabPanels = useMemo(() => {
+    return lists.map((list) => {
       const listActions = lists.filter((l) => l._id !== list._id);
-      return (
-        <TabPanel
-          key={list._id}
-          value={list._id}
-          sx={{ padding: theme.spacing(3, 0) }}
-        >
-          <MusicList
-            key={list._id}
-            list={list}
+      const items = list.items.map((item) => {
+        return (
+          <MusicListItem
+            key={item._id}
+            item={item}
             listActions={listActions}
             activeGenres={activeGenres}
             relatedArtists={relatedArtists}
@@ -544,36 +612,55 @@ const App: React.FC = () => {
             onGetRelated={getRelatedArtists}
             onClearRelated={clearRelatedArtists}
           />
+        );
+      });
+      return (
+        <TabPanel
+          key={list._id}
+          value={list._id}
+          sx={{ padding: theme.spacing(3, 0) }}
+        >
+          <MusicList title={list.title} description={list.description}>
+            {items}
+          </MusicList>
         </TabPanel>
       );
     });
+  }, [lists, activeGenres, relatedArtists]);
 
-    const tabs = lists.map((list) => {
+  const tabs = useMemo(() => {
+    return lists.map((list) => {
       return <Tab key={list._id} label={list.title} value={list._id} />;
     });
-    return (
-      <TabContext value={activeTab}>
-        <TabList
-          variant="fullWidth"
-          onChange={(e, newValue) => setActiveTab(newValue)}
-          textColor="primary"
-          indicatorColor="primary"
-        >
-          {tabs}
-        </TabList>
-        {tabPanels}
-      </TabContext>
-    );
-  };
+  }, [lists]);
+
+  const tabsContent = activeTab && (
+    <TabContext value={activeTab}>
+      <TabList
+        variant="fullWidth"
+        onChange={(e, newValue) => setActiveTab(newValue)}
+        textColor="primary"
+        indicatorColor="primary"
+      >
+        {tabs}
+      </TabList>
+      {tabPanels}
+    </TabContext>
+  );
 
   const getArtistContent = () => {
-    const elements = artistResults.map((artist) => (
+    const elements = searchState.results.map((artist: TArtist) => (
       <React.Fragment key={artist.id}>
         <ArtistResultListItem
           key={artist.id}
           artist={artist}
           showGenres={true}
-          onSelectArtist={setArtist}
+          onSelectArtist={(artist) =>
+            dispatchSearchState({
+              type: SearchStateActionType.SET_ARTIST,
+              payload: artist,
+            })
+          }
         />
         <Divider component="li" />
       </React.Fragment>
@@ -599,14 +686,19 @@ const App: React.FC = () => {
             <IconButton
               aria-label="Open search"
               color="primary"
-              onClick={() => setSearchBackdropOpen(true)}
+              onClick={() =>
+                dispatchSearchState({
+                  type: SearchStateActionType.SET_BACKDROP_OPEN,
+                  payload: true,
+                })
+              }
               size="large"
             >
               <Search fontSize="large" />
             </IconButton>
           </Box>
           <Backdrop
-            open={searchBackdropOpen}
+            open={searchState.backdropOpen}
             sx={{
               backgroundColor: theme.palette.common.black,
               zIndex: theme.zIndex.drawer + 1,
@@ -615,11 +707,16 @@ const App: React.FC = () => {
               overflowY: 'auto',
             }}
           >
-            {searchBackdropOpen && (
+            {searchState.backdropOpen && (
               <>
                 <IconButton
                   aria-label="Close search"
-                  onClick={() => setSearchBackdropOpen(false)}
+                  onClick={() =>
+                    dispatchSearchState({
+                      type: SearchStateActionType.SET_BACKDROP_OPEN,
+                      payload: false,
+                    })
+                  }
                   sx={{
                     position: 'absolute',
                     top: theme.spacing(1),
@@ -635,21 +732,32 @@ const App: React.FC = () => {
                 >
                   <Box mt={8}>
                     <ArtistInput
-                      artistQuery={artistQuery}
                       showInput={isArtistInputVisible}
-                      onInputChange={(text) => setArtistQuery(text)}
+                      onInputChange={(text) => {
+                        fetchArtists(text);
+                      }}
                     />
                     <Box mt={4}>{getArtistContent()}</Box>
                     <ActiveArtist
-                      artist={activeArtist}
-                      onDismiss={() => setActiveArtist({} as TArtist)}
+                      artist={searchState.artist}
+                      onDismiss={() =>
+                        dispatchSearchState({
+                          type: SearchStateActionType.SET_ARTIST,
+                          payload: undefined,
+                        })
+                      }
                       onAdd={addActiveToList}
                     />
                     <Box my={2}>
                       <AlbumInput
                         albums={albums}
                         showInput={isAlbumInputVisible}
-                        onSelectAlbum={setAlbum}
+                        onSelectAlbum={(album) =>
+                          dispatchSearchState({
+                            type: SearchStateActionType.SET_ALBUM,
+                            payload: album ?? undefined,
+                          })
+                        }
                       />
                     </Box>
                   </Box>
@@ -657,12 +765,11 @@ const App: React.FC = () => {
               </>
             )}
           </Backdrop>
-          {getListContent()}
+          {tabsContent}
         </Box>
       </Fade>
     </Container>
   );
-  // }
 
   return (
     <ThemeProvider theme={Theme}>

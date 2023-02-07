@@ -1,22 +1,35 @@
-import React from 'react';
-import useDebouncedSearch from '../hooks/useDebouncedSearch';
+import React, { useRef, useState } from 'react';
+import debounce from 'awesome-debounce-promise';
+// import { useAsync } from 'react-async-hook';
+// import useDebouncedSearch from '../hooks/useDebouncedSearch';
 import { Fade, TextField, useTheme } from '@mui/material';
 
 interface ArtistInputProps {
-  artistQuery: string;
   showInput: boolean;
   onInputChange: (text: string) => void;
 }
 
 const ArtistInput: React.FC<ArtistInputProps> = ({
-  artistQuery,
   showInput,
   onInputChange,
 }) => {
-  const useArtistSearch = () =>
-    useDebouncedSearch((text) => onInputChange(text));
+  if (!showInput) {
+    return null;
+  }
 
-  const { setInputText } = useArtistSearch();
+  const [inputText, setInputText] = useState('');
+  const inputRef = useRef(inputText);
+
+  const handleChange = (value: string) => {
+    if (inputRef.current === value) {
+      onInputChange(value);
+    }
+  };
+
+  const debouncedSearchFunction = debounce(
+    async (value) => handleChange(value),
+    500
+  );
 
   const theme = useTheme();
 
@@ -26,10 +39,6 @@ const ArtistInput: React.FC<ArtistInputProps> = ({
     color: theme.palette.primary.main,
   };
 
-  if (!showInput) {
-    return null;
-  }
-
   return (
     <Fade in={true} timeout={{ enter: 0, exit: 500 }}>
       <TextField
@@ -38,9 +47,13 @@ const ArtistInput: React.FC<ArtistInputProps> = ({
         color="primary"
         autoFocus
         fullWidth
-        value={artistQuery}
+        value={inputText}
         variant="standard"
-        onChange={(e) => setInputText(e.target.value)}
+        onChange={(e) => {
+          inputRef.current = e.target.value;
+          setInputText(e.target.value);
+          debouncedSearchFunction(e.target.value);
+        }}
         inputProps={{
           sx: inputStyles,
           autoComplete: 'off',

@@ -4,6 +4,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   AccordionActions,
+  Box,
   Button,
   Chip,
   Dialog,
@@ -17,10 +18,8 @@ import {
   RadioGroup,
   Tooltip,
   Typography,
-  Zoom,
   useTheme,
-  Box,
-  SxProps,
+  Zoom,
 } from '@mui/material';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import AlbumIcon from '@mui/icons-material/Album';
@@ -33,7 +32,6 @@ import ArtistResultListItem from './ArtistResultListItem';
 import { TArtist, TGenre, TList, TListItem } from '../types/types';
 
 export interface MusicListItemProps {
-  sx: SxProps;
   item: TListItem;
   listActions: TList[];
   activeGenres: TGenre[];
@@ -147,7 +145,14 @@ const MusicListItem: React.FC<MusicListItemProps> = ({
   };
 
   return (
-    <Accordion TransitionProps={{ unmountOnExit: true }} square>
+    <Accordion
+      sx={{
+        marginBottom: theme.spacing(2.5),
+        marginTop: theme.spacing(2.5),
+      }}
+      TransitionProps={{ unmountOnExit: true }}
+      square
+    >
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Box
           sx={{

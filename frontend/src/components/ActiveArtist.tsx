@@ -14,7 +14,7 @@ import AvatarImage from './AvatarImage';
 import { TArtist } from '../types/types';
 
 interface ActiveArtistProps {
-  artist: TArtist;
+  artist: TArtist | undefined;
   onAdd: (listId?: string | null) => void;
   onDismiss: () => void;
 }
@@ -24,7 +24,7 @@ const ActiveArtist: React.FC<ActiveArtistProps> = ({
   onAdd,
   onDismiss,
 }) => {
-  if (Object.keys(artist).length === 0) {
+  if (typeof artist === 'undefined') {
     return null;
   }
 
