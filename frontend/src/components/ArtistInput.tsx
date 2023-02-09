@@ -26,6 +26,8 @@ const ArtistInput: React.FC<ArtistInputProps> = ({
     }
   };
 
+  // TODO: Move to hook?
+  // TODO: Memoize?
   const debouncedSearchFunction = debounce(
     async (value) => handleChange(value),
     500
