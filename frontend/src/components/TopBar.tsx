@@ -8,8 +8,10 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import FilterList from '@mui/icons-material/FilterList';
 import ChevronRight from '@mui/icons-material/ChevronRight';
+import Lock from '@mui/icons-material/Lock';
+import { useAuth } from '../hooks/useAuth';
 
 interface TopBarProps {
   appTitle: string;
@@ -20,6 +22,7 @@ const TopBar: React.FC<PropsWithChildren<TopBarProps>> = ({
   children,
 }) => {
   const theme = useTheme();
+  const { logout } = useAuth();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -33,15 +36,25 @@ const TopBar: React.FC<PropsWithChildren<TopBarProps>> = ({
         <Typography component="h1" variant="h5">
           {appTitle}
         </Typography>
-        <IconButton
-          sx={{ marginLeft: 'auto' }}
-          color="inherit"
-          aria-label="Open filters"
-          onClick={() => toggleDrawer(true)}
-          size="large"
-        >
-          <MenuIcon />
-        </IconButton>
+        <Box sx={{ marginLeft: 'auto' }}>
+          <IconButton
+            sx={{ marginRight: theme.spacing(2) }}
+            color="inherit"
+            aria-label="Log out"
+            onClick={() => logout()}
+            size="large"
+          >
+            <Lock />
+          </IconButton>
+          <IconButton
+            color="inherit"
+            aria-label="Open filters"
+            onClick={() => toggleDrawer(true)}
+            size="large"
+          >
+            <FilterList />
+          </IconButton>
+        </Box>
         <Drawer anchor="right" open={drawerOpen} variant="persistent">
           <Box
             sx={{ padding: theme.spacing(1.5), maxWidth: 350, minWidth: 250 }}

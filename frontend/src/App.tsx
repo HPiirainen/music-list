@@ -93,12 +93,7 @@ const App: React.FC = () => {
   const [lists, setLists] = useState<TList[]>([]);
   const [genres, setGenres] = useState<TGenre[]>([]);
   const [activeGenres, setActiveGenres] = useState<TGenre[]>([]);
-  const [activeArtist, setActiveArtist] = useState<TArtist>({} as TArtist);
-  const [artistResults, setArtistResults] = useState<TArtist[]>([]);
-  const [activeAlbum, setActiveAlbum] = useState<TAlbum>({} as TAlbum);
-  const [albums, setAlbums] = useState<TAlbum[]>([]);
   const [relatedArtists, setRelatedArtists] = useState<TArtist[]>([]);
-  const [loadingAlbums, setLoadingAlbums] = useState<boolean>(false);
   const [message, setMessage] = useState<TMessage | Record<string, never>>({});
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
@@ -156,166 +151,136 @@ const App: React.FC = () => {
     return () => controller.abort();
   }, []);
 
-  // useEffect(() => {
-  //   console.log('useEffect: jwt');
-  //   if (jwt) {
-  //     loadListItems();
-  //     loadGenres();
-  //   }
-  // }, [jwt]);
-
-  // useEffect(() => {
-  //   console.log('useEffect: activeArtist');
-  //   fetchArtistAlbums();
-  //   setArtistQuery('');
-  // }, [activeArtist]);
-
-  // useEffect(() => {
-  //   console.log('useEffect: activeAlbum');
-  //   setAlbums([]);
-  //   addActiveToList(getDefaultListId());
-  // }, [activeAlbum]);
-
-  // useEffect(() => {
-  //   console.log('useEffect: artistQuery');
-  //   fetchArtists();
-  // }, [artistQuery]);
-
-  // useEffect(() => {
-  //   console.log('useEffect: searchState.query');
-  //   fetchArtists();
-  // }, [searchState.query]);
-
-  // useEffect(() => {
-  //   console.log('useEffect: lists');
-  //   if (!activeTab && lists.length) {
-  //     setActiveTab(lists[0]._id);
-  //   }
-  // }, [lists]);
-
-  // useEffect(() => {
-  //   console.log('useEffect: searchBackDropOpen');
-  //   if (!searchBackdropOpen) {
-  //     setArtistResults([]);
-  //     setActiveArtist({} as TArtist);
-  //     setAlbums([]);
-  //     setActiveAlbum({} as TAlbum);
-  //   }
-  // }, [searchBackdropOpen]);
-
-  const loadGenres = () => {
-    dispatchAppState({
-      type: AppStateActionType.SET_STATUS,
-      payload: AppStateStatus.LOADING,
-    });
-    axios
-      .get(`${apiBaseUrl}/items/genres`)
-      .then((response) => {
-        setGenres(response.data);
-        dispatchAppState({
-          type: AppStateActionType.SET_STATUS,
-          payload: AppStateStatus.READY,
-        });
-      })
-      .catch((error) => {
-        handleError(error);
-      });
-  };
-
-  const loadListItems = async () => {
-    dispatchAppState({
-      type: AppStateActionType.SET_STATUS,
-      payload: AppStateStatus.LOADING,
-    });
-    const readListsUrl = `${apiBaseUrl}/lists`;
-    const readItemsUrl = `${apiBaseUrl}/items`;
-    Promise.all([axios.get(readListsUrl), axios.get(readItemsUrl)])
-      .then(
-        axios.spread((...responses) => {
-          const allItems = responses[1].data;
-          const lists = responses[0].data.map((list: TList) => {
-            const items = allItems.filter(
-              (item: TListItem) => item.list === list._id
-            );
-            return { ...list, items };
-          });
-          setLists(lists);
-          dispatchAppState({
-            type: AppStateActionType.SET_STATUS,
-            payload: AppStateStatus.READY,
-          });
-        })
-      )
-      .catch((error) => {
-        handleError(error);
-        dispatchAppState({
-          type: AppStateActionType.SET_STATUS,
-          payload: AppStateStatus.ERROR,
-        });
-      });
-  };
-
-  const getDefaultListId = () => {
+  const getDefaultList = () => {
     const defaultList = lists.find((list) => list.isDefault);
-    return defaultList ? defaultList._id : null;
+    return defaultList ?? lists[0];
   };
 
-  const deleteItem = (item: TListItem) => {
-    const deleteItemUrl = `${apiBaseUrl}/items/delete/${item._id}`;
+  const addToList = async (item: TListItem) => {
+    setSearchBackdropOpen(false);
     dispatchAppState({
       type: AppStateActionType.SET_STATUS,
       payload: AppStateStatus.LOADING,
     });
-    axios
-      .delete(deleteItemUrl)
-      .then(() => {
-        loadListItems();
-        loadGenres();
-        setMessage({
-          message: 'Item deleted successfully!',
-          type: 'success',
-        });
-        dispatchAppState({
-          type: AppStateActionType.SET_STATUS,
-          payload: AppStateStatus.READY,
-        });
-      })
-      .catch((error) => {
-        handleError(error);
-        dispatchAppState({
-          type: AppStateActionType.SET_STATUS,
-          payload: AppStateStatus.ERROR,
-        });
+    try {
+      const list = getDefaultList();
+      const { _id: listId } = list;
+      const controller = new AbortController();
+      const signal = controller.signal;
+      const options = { signal };
+      const createItemUrl = `${apiBaseUrl}/items/create`;
+      await axios.post(createItemUrl, { ...item, list: listId }, options);
+      const getListItemsUrl = `${apiBaseUrl}/items/list/${listId}`;
+      const response = await axios.get(getListItemsUrl, options);
+      setLists((prevLists) =>
+        prevLists.map((prevList) => {
+          if (prevList._id === listId) {
+            return {
+              ...prevList,
+              items: response.data,
+            };
+          }
+          return prevList;
+        })
+      );
+      setMessage({
+        message: 'Item added successfully!',
+        type: 'success',
       });
+      const genres = await axios.get(`${apiBaseUrl}/items/genres`, options);
+      setGenres(genres.data);
+      dispatchAppState({
+        type: AppStateActionType.SET_STATUS,
+        payload: AppStateStatus.READY,
+      });
+    } catch (error) {
+      if (axios.isCancel(error)) {
+        console.log('Request canceled', error);
+      } else if (error instanceof Error) {
+        handleError(error);
+      }
+    }
   };
 
-  const moveItemToList = (item: TListItem, listId: string) => {
-    const updateItemUrl = `${apiBaseUrl}/items/update/${item._id}`;
+  const deleteItem = async (item: TListItem) => {
     dispatchAppState({
       type: AppStateActionType.SET_STATUS,
       payload: AppStateStatus.LOADING,
     });
-    axios
-      .put(updateItemUrl, { list: listId })
-      .then(() => {
-        loadListItems();
-        loadGenres();
-        setMessage({
-          message: 'Item updated successfully!',
-          type: 'success',
-        });
-        dispatchAppState({
-          type: AppStateActionType.SET_STATUS,
-          payload: AppStateStatus.READY,
-        });
-      })
-      .catch((error) => {
-        handleError(error);
-        dispatchAppState({
-          type: AppStateActionType.SET_STATUS,
-          payload: AppStateStatus.ERROR,
-        });
+    try {
+      const { list: listId } = item;
+      const deleteItemUrl = `${apiBaseUrl}/items/delete/${item._id}`;
+      const controller = new AbortController();
+      const { signal } = controller;
+      const options = { signal };
+      await axios.delete(deleteItemUrl, options);
+      const getListItemsUrl = `${apiBaseUrl}/items/list/${listId}`;
+      const response = await axios.get(getListItemsUrl, options);
+      setLists((prevLists) =>
+        prevLists.map((prevList) => {
+          if (prevList._id === listId) {
+            return {
+              ...prevList,
+              items: response.data,
+            };
+          }
+          return prevList;
+        })
+      );
+      const genres = await axios.get(`${apiBaseUrl}/items/genres`, options);
+      setGenres(genres.data);
+      setMessage({
+        message: 'Item deleted successfully!',
+        type: 'success',
       });
+      dispatchAppState({
+        type: AppStateActionType.SET_STATUS,
+        payload: AppStateStatus.READY,
+      });
+    } catch (error) {
+      if (axios.isCancel(error)) {
+        console.log('Request canceled', error);
+      } else if (error instanceof Error) {
+        handleError(error);
+      }
+    }
+  };
+
+  const moveItemToList = async (item: TListItem, listId: string) => {
+    try {
+      const controller = new AbortController();
+      const { signal } = controller;
+      const options = { signal };
+      const updateItemUrl = `${apiBaseUrl}/items/update/${item._id}`;
+      dispatchAppState({
+        type: AppStateActionType.SET_STATUS,
+        payload: AppStateStatus.LOADING,
+      });
+      await axios.put(updateItemUrl, { list: listId }, options);
+      const getItemsUrl = `${apiBaseUrl}/items`;
+      const { data: items } = await axios.get(getItemsUrl, options);
+      const newLists = lists.map((list: TList) => {
+        const listItems = items.filter(
+          (item: TListItem) => item.list === list._id
+        );
+        return { ...list, items: listItems };
+      });
+      setLists(newLists);
+      setMessage({
+        message: 'Item updated successfully!',
+        type: 'success',
+      });
+      dispatchAppState({
+        type: AppStateActionType.SET_STATUS,
+        payload: AppStateStatus.READY,
+      });
+    } catch (error) {
+      if (axios.isCancel(error)) {
+        console.log('Request canceled', error);
+      } else if (error instanceof Error) {
+        handleError(error);
+      }
+    }
   };
 
   const getRelatedArtists = (artistId: string | undefined) => {
@@ -351,47 +316,6 @@ const App: React.FC = () => {
 
   const clearRelatedArtists = () => {
     setRelatedArtists([]);
-  };
-
-  const addActiveToList: (listId?: string | null) => void = (listId = null) => {
-    // if (!hasActiveArtist) {
-    //   return;
-    // }
-    // // const item = constructItemFromState();
-    // item.list = listId || getDefaultListId();
-    // dispatchAppState({
-    //   type: AppStateActionType.SET_STATUS,
-    //   payload: AppStateStatus.LOADING,
-    // });
-    // const createItemUrl = `${apiBaseUrl}/items/create`;
-    // axios
-    //   .post(createItemUrl, item)
-    //   .then(() => {
-    //     // setActiveArtist({});
-    //     // setActiveAlbum({});
-    //     loadListItems();
-    //     loadGenres();
-    //     dispatchSearchState({
-    //       type: SearchStateActionType.SET_BACKDROP_OPEN,
-    //       payload: false,
-    //     });
-    //     setSearchBackdropOpen(false);
-    //     setMessage({
-    //       message: 'Item added successfully!',
-    //       type: 'success',
-    //     });
-    //     dispatchAppState({
-    //       type: AppStateActionType.SET_STATUS,
-    //       payload: AppStateStatus.READY,
-    //     });
-    //   })
-    //   .catch((error) => {
-    //     handleError(error);
-    //     dispatchAppState({
-    //       type: AppStateActionType.SET_STATUS,
-    //       payload: AppStateStatus.ERROR,
-    //     });
-    //   });
   };
 
   const onSetGenres = (genres: TGenre[]) => {
@@ -471,7 +395,7 @@ const App: React.FC = () => {
     });
   }, [lists]);
 
-  const tabsContent = activeTab && (
+  const tabsContent = activeTab ? (
     <TabContext value={activeTab}>
       <TabList
         variant="fullWidth"
@@ -483,13 +407,7 @@ const App: React.FC = () => {
       </TabList>
       {tabPanels}
     </TabContext>
-  );
-
-  const addToList = (item: TListItem) => {
-    console.log(item);
-    setSearchBackdropOpen(false);
-    // TODO: continue from here.
-  };
+  ) : null;
 
   const mainContent = (
     <Container maxWidth="md" className="app">
@@ -559,7 +477,6 @@ const App: React.FC = () => {
             genreSetter={onSetGenres}
           />
         </TopBar>
-        {appState.status}
         {mainContent}
         <Message message={message} onClear={clearMessage}></Message>
       </CssBaseline>

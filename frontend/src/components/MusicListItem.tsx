@@ -263,7 +263,10 @@ const MusicListItem: React.FC<MusicListItemProps> = ({
             </Button>
             <Button
               disabled={selectedList === null}
-              onClick={() => onMoveItem(item, selectedList)}
+              onClick={() => {
+                setListDialogOpen(false);
+                onMoveItem(item, selectedList);
+              }}
               color="primary"
               variant="contained"
             >

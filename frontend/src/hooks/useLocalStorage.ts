@@ -24,7 +24,11 @@ export function useLocalStorage<T>(
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(key, JSON.stringify(storedValue));
+      if (!storedValue) {
+        window.localStorage.removeItem(key);
+      } else {
+        window.localStorage.setItem(key, JSON.stringify(storedValue));
+      }
     } catch (error) {
       console.error(`Problem setting localStorage key ${key} to`, storedValue);
     }
