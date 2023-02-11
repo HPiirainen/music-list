@@ -1,23 +1,24 @@
-import React, { ReactNode, SyntheticEvent } from 'react';
+import React, { PropsWithChildren, SyntheticEvent } from 'react';
 import {
   Alert,
+  AlertColor,
   AlertTitle,
-  Box,
   Snackbar,
   SnackbarCloseReason,
-  useTheme,
 } from '@mui/material';
-import { TMessage } from '../types/types';
 
 interface MessageProps {
-  message: TMessage;
+  type: AlertColor | undefined;
   onClear: () => void;
   duration?: number;
 }
 
-const Message: React.FC<MessageProps> = ({ message, onClear, duration }) => {
-  const theme = useTheme();
-
+const Message: React.FC<PropsWithChildren<MessageProps>> = ({
+  type,
+  onClear,
+  duration,
+  children,
+}) => {
   const onClose = (
     // TODO: Fix unknown if possible.
     event: SyntheticEvent<unknown> | Event,
@@ -29,42 +30,23 @@ const Message: React.FC<MessageProps> = ({ message, onClear, duration }) => {
     onClear();
   };
 
-  if ('message' in message) {
-    const msgContent: string | string[] | undefined = message.message;
-    let content: ReactNode = null;
-    if (typeof msgContent === 'object') {
-      const nodes = msgContent.map<ReactNode>((msg, index) => (
-        <li key={index}>{msg}</li>
-      ));
-      content = (
-        <Box
-          component="ul"
-          sx={{ padding: theme.spacing(0, 0, 0, 2), margin: 0 }}
-        >
-          {nodes}
-        </Box>
-      );
-    }
-    return (
-      <Snackbar
-        open={true}
-        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-        autoHideDuration={duration}
-        onClose={onClose}
-      >
-        <Alert severity={message.type} variant="filled" sx={{ minWidth: 350 }}>
-          <AlertTitle sx={{ textTransform: 'capitalize' }}>
-            {message.type}
-          </AlertTitle>
-          {content}
-        </Alert>
-      </Snackbar>
-    );
-  }
-  return null;
+  return (
+    <Snackbar
+      open={true}
+      anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
+      autoHideDuration={duration}
+      onClose={onClose}
+    >
+      <Alert severity={type} variant="filled" sx={{ minWidth: 350 }}>
+        <AlertTitle sx={{ textTransform: 'capitalize' }}>{type}</AlertTitle>
+        {children}
+      </Alert>
+    </Snackbar>
+  );
 };
 
 Message.defaultProps = {
+  type: 'success',
   duration: 10000,
 };
 

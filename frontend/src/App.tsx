@@ -156,6 +156,23 @@ const App: React.FC = () => {
     return defaultList ?? lists[0];
   };
 
+  const getAndUpdateList = async (listId: string) => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const options = { signal };
+    const getListItemsUrl = `${apiBaseUrl}/items/list/${listId}`;
+    const response = await axios.get(getListItemsUrl, options);
+    const listItems = response.data;
+    setLists((prevLists) =>
+      prevLists.map((prevList) => {
+        if (prevList._id === listId) {
+          return { ...prevList, items: listItems };
+        }
+        return prevList;
+      })
+    );
+  };
+
   const addToList = async (item: TListItem) => {
     setSearchBackdropOpen(false);
     dispatchAppState({
@@ -170,19 +187,7 @@ const App: React.FC = () => {
       const options = { signal };
       const createItemUrl = `${apiBaseUrl}/items/create`;
       await axios.post(createItemUrl, { ...item, list: listId }, options);
-      const getListItemsUrl = `${apiBaseUrl}/items/list/${listId}`;
-      const response = await axios.get(getListItemsUrl, options);
-      setLists((prevLists) =>
-        prevLists.map((prevList) => {
-          if (prevList._id === listId) {
-            return {
-              ...prevList,
-              items: response.data,
-            };
-          }
-          return prevList;
-        })
-      );
+      await getAndUpdateList(listId);
       setMessage({
         message: 'Item added successfully!',
         type: 'success',
@@ -227,6 +232,7 @@ const App: React.FC = () => {
           return prevList;
         })
       );
+      // await getAndUpdateList(listId);
       const genres = await axios.get(`${apiBaseUrl}/items/genres`, options);
       setGenres(genres.data);
       setMessage({
@@ -353,6 +359,7 @@ const App: React.FC = () => {
     });
   };
 
+  // TODO: don't handle it here, handle it in the component
   const clearMessage = () => {
     setMessage({});
   };
@@ -478,7 +485,11 @@ const App: React.FC = () => {
           />
         </TopBar>
         {mainContent}
-        <Message message={message} onClear={clearMessage}></Message>
+        {message.message ? (
+          <Message type={message.type} onClear={clearMessage}>
+            {message.message}
+          </Message>
+        ) : null}
       </CssBaseline>
     </ThemeProvider>
   );
