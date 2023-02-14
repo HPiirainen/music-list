@@ -34,7 +34,7 @@ import { TArtist, TGenre, TList, TListItem } from '../types/types';
 export interface MusicListItemProps {
   item: TListItem;
   listActions: TList[];
-  activeGenres: TGenre[];
+  activeGenres: Set<TGenre>;
   relatedArtists: TArtist[];
   onDeleteItem: (item: TListItem) => void;
   onMoveItem: (item: TListItem, list: string) => void;
@@ -59,8 +59,8 @@ const MusicListItem: React.FC<MusicListItemProps> = ({
   const theme = useTheme();
 
   if (
-    activeGenres.length &&
-    !item.artist.genres.some((g) => activeGenres.includes(g))
+    activeGenres.size > 0 &&
+    !item.artist.genres.some((g) => activeGenres.has(g))
   ) {
     return null;
   }

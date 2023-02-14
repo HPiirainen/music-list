@@ -15,6 +15,7 @@ interface ListSwitchProps {
   label: string;
   isChecked: boolean;
   onSwitch: SwitchHandler;
+  isDisabled?: boolean;
 }
 
 const ListSwitch: React.FC<ListSwitchProps> = ({
@@ -22,8 +23,20 @@ const ListSwitch: React.FC<ListSwitchProps> = ({
   label,
   isChecked,
   onSwitch,
+  isDisabled,
 }) => {
-  const labelId = `switch-label-${identifier}`;
+  const slugify = (text: string | number) => {
+    return text
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
+
+  // TODO: These re-render whenever a toggle is switched.
+  const labelId = `switch-label-${slugify(identifier)}`;
 
   const sendState = (e: ChangeEvent, checked: boolean) => {
     onSwitch(checked, label);
@@ -38,6 +51,7 @@ const ListSwitch: React.FC<ListSwitchProps> = ({
           inputProps={{ 'aria-labelledby': labelId }}
           checked={isChecked}
           onChange={sendState}
+          disabled={isDisabled}
         />
       </ListItemIcon>
       <ListItemText

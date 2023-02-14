@@ -1,66 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { List, ListSubheader } from '@mui/material';
 import ListSwitch from './ListSwitch';
 import { TGenre } from '../types/types';
 
 interface GenreFilterProps {
-  genres: TGenre[];
-  activeGenres: TGenre[];
-  genreSetter: (genre: TGenre[]) => void;
+  availableGenres: TGenre[];
+  activeGenres: Set<TGenre>;
+  onSelectGenres: (newSelectedGenres: Set<TGenre>) => void;
 }
 
 const GenreFilter: React.FC<GenreFilterProps> = ({
-  genres,
+  availableGenres,
   activeGenres,
-  genreSetter,
+  onSelectGenres,
 }) => {
-  const [allSelected, setAllSelected] = useState(true);
+  const [selectAll, setSelectAll] = useState(true);
 
-  useEffect(() => {
-    if (activeGenres.length === 0) {
-      // Check select all if no genres checked
-      toggleSelectAll(true);
+  useLayoutEffect(() => {
+    if (activeGenres.size === 0) {
+      setSelectAll(true);
     } else {
-      // Otherwise keep unchecked
-      toggleSelectAll(false);
+      setSelectAll(false);
     }
   }, [activeGenres]);
 
-  useEffect(() => {
-    // If select all was checked, empty checked genres
-    if (allSelected) {
-      genreSetter([]);
+  useLayoutEffect(() => {
+    if (selectAll) {
+      onSelectGenres(new Set());
     }
-  }, [allSelected]);
+  }, [selectAll]);
 
-  const toggleSelectAll = (state: boolean) => {
-    setAllSelected(state);
+  const handleToggleAll = () => {
+    setSelectAll(!selectAll);
   };
 
-  const switchGenre = (state: boolean, genre: TGenre) => {
-    let genres: TGenre[];
-    if (state) {
-      genres = [...activeGenres, genre];
+  const handleToggle = (genre: TGenre) => {
+    const newSelected = new Set(activeGenres);
+    if (newSelected.has(genre)) {
+      newSelected.delete(genre);
     } else {
-      genres = [...activeGenres].filter((g) => g !== genre);
+      newSelected.add(genre);
     }
-    genreSetter(genres);
+    onSelectGenres(newSelected);
   };
 
-  const listItems = genres.map((genre, index) => {
-    const genreIsActive = activeGenres.includes(genre);
-    return (
-      <ListSwitch
-        key={index}
-        label={genre}
-        identifier={index}
-        isChecked={genreIsActive}
-        onSwitch={switchGenre}
-      />
-    );
-  });
-
-  if (genres.length === 0) {
+  if (availableGenres.length === 0) {
     return null;
   }
 
@@ -68,12 +52,23 @@ const GenreFilter: React.FC<GenreFilterProps> = ({
     <List subheader={<ListSubheader disableSticky>Genres</ListSubheader>}>
       <ListSwitch
         key="select-all"
-        label="Show all"
+        label="Toggle all"
         identifier="select-all"
-        isChecked={allSelected}
-        onSwitch={toggleSelectAll}
+        isChecked={selectAll}
+        onSwitch={handleToggleAll}
+        isDisabled={activeGenres.size === 0}
       />
-      {listItems}
+      {availableGenres.map((genre) => {
+        return (
+          <ListSwitch
+            key={genre}
+            label={genre}
+            identifier={genre}
+            isChecked={activeGenres.has(genre)}
+            onSwitch={() => handleToggle(genre)}
+          />
+        );
+      })}
     </List>
   );
 };

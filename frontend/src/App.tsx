@@ -81,7 +81,7 @@ const App: React.FC = () => {
   const [searchBackdropOpen, setSearchBackdropOpen] = useState<boolean>(false);
   const [lists, setLists] = useState<TList[]>([]);
   const [genres, setGenres] = useState<TGenre[]>([]);
-  const [activeGenres, setActiveGenres] = useState<TGenre[]>([]);
+  const [activeGenres, setActiveGenres] = useState(new Set<string>());
   const [relatedArtists, setRelatedArtists] = useState<TArtist[]>([]);
   const [message, setMessage] = useState<TMessage | Record<string, never>>({});
   const [activeTab, setActiveTab] = useState<string | null>(null);
@@ -302,7 +302,7 @@ const App: React.FC = () => {
     setRelatedArtists([]);
   };
 
-  const onSetGenres = (genres: TGenre[]) => {
+  const onSetGenres = (genres: Set<TGenre>) => {
     setActiveGenres(genres);
   };
 
@@ -456,9 +456,9 @@ const App: React.FC = () => {
     <>
       <TopBar appTitle="Musiqueue">
         <GenreFilter
-          genres={genres}
+          availableGenres={genres}
           activeGenres={activeGenres}
-          genreSetter={onSetGenres}
+          onSelectGenres={onSetGenres}
         />
       </TopBar>
       {mainContent}
