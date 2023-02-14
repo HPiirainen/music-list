@@ -398,7 +398,7 @@ const App: React.FC = () => {
     <Container maxWidth="md" className="app">
       <Backdrop
         sx={{
-          zIndex: theme.zIndex.drawer + 2,
+          zIndex: theme.zIndex.drawer + 1,
           color: theme.palette.common.white,
           backgroundColor: alpha(theme.palette.common.black, 0.4),
         }}
@@ -422,7 +422,7 @@ const App: React.FC = () => {
             open={searchBackdropOpen}
             sx={{
               backgroundColor: theme.palette.common.black,
-              zIndex: theme.zIndex.drawer + 1,
+              zIndex: theme.zIndex.drawer + 3,
               alignItems: 'flex-start',
               flexWrap: 'wrap',
               overflowY: 'auto',
