@@ -2,6 +2,12 @@ import React, { PropsWithChildren, useState } from 'react';
 import {
   AppBar,
   Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Drawer,
   IconButton,
   Toolbar,
@@ -25,6 +31,15 @@ const TopBar: React.FC<PropsWithChildren<TopBarProps>> = ({
   const { logout } = useAuth();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleDialogOpen = () => {
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
 
   const toggleDrawer = (open: boolean) => {
     setDrawerOpen(open);
@@ -45,7 +60,7 @@ const TopBar: React.FC<PropsWithChildren<TopBarProps>> = ({
             sx={{ marginRight: theme.spacing(2) }}
             color="inherit"
             aria-label="Log out"
-            onClick={() => logout()}
+            onClick={handleDialogOpen}
             size="large"
           >
             <Lock />
@@ -75,6 +90,26 @@ const TopBar: React.FC<PropsWithChildren<TopBarProps>> = ({
           </Box>
         </Drawer>
       </Toolbar>
+      {/* TODO: Add proper styles for the dialog */}
+      <Dialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        aria-labelledby="logout-dialog-title"
+        aria-describedby="logout-dialog-description"
+      >
+        <DialogTitle id="logout-dialog-title">Logout?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="logout-dialog-description">
+            Are you sure you want to logout?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose}>Cancel</Button>
+          <Button onClick={logout} autoFocus>
+            Logout
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppBar>
   );
 };
