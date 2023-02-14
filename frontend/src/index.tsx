@@ -6,6 +6,8 @@ import App from './App';
 import './index.css';
 import Login from './components/Login';
 import { AuthProvider } from './hooks/useAuth';
+import { CssBaseline, ThemeProvider } from '@mui/material';
+import Theme from './utils/theme';
 
 const router = createBrowserRouter([
   {
@@ -33,7 +35,11 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <RouterProvider router={router} />
+      <ThemeProvider theme={Theme}>
+        <CssBaseline>
+          <RouterProvider router={router} />
+        </CssBaseline>
+      </ThemeProvider>
     </React.StrictMode>
   );
 }

@@ -31,7 +31,11 @@ const TopBar: React.FC<PropsWithChildren<TopBarProps>> = ({
   };
 
   return (
-    <AppBar position="sticky" color="secondary">
+    <AppBar
+      position="sticky"
+      color="secondary"
+      sx={{ zIndex: theme.zIndex.drawer + 3 }}
+    >
       <Toolbar>
         <Typography component="h1" variant="h5">
           {appTitle}

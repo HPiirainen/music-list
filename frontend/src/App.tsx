@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useReducer, useMemo } from 'react';
 import axios from './utils/axios';
-import Theme from './utils/theme';
-import { ThemeProvider } from '@mui/material/styles';
+import './utils/fonts';
 import {
   alpha,
   Backdrop,
   Box,
   CircularProgress,
   Container,
-  CssBaseline,
   Fade,
   IconButton,
   Tab,
@@ -23,17 +21,9 @@ import TopBar from './components/TopBar';
 import GenreFilter from './components/GenreFilter';
 import MusicList from './components/MusicList';
 import Message from './components/Message';
-import {
-  TAlbum,
-  TArtist,
-  TGenre,
-  TList,
-  TListItem,
-  TMessage,
-} from './types/types';
-import './utils/fonts';
+import { TArtist, TGenre, TList, TListItem, TMessage } from './types/types';
 import { AxiosError, AxiosResponse } from 'axios';
-import { useAuth } from './hooks/useAuth';
+// import { useAuth } from './hooks/useAuth';
 import MusicListItem from './components/MusicListItem';
 import SearchLayer from './components/SearchLayer';
 
@@ -83,7 +73,6 @@ const appStateReducer = (state: AppState, action: AppStateAction) => {
 };
 
 const App: React.FC = () => {
-  // Handles loading status etc.
   const [appState, dispatchAppState] = useReducer(
     appStateReducer,
     null,
@@ -97,13 +86,13 @@ const App: React.FC = () => {
   const [message, setMessage] = useState<TMessage | Record<string, never>>({});
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
-  const { user, logout } = useAuth();
+  // const { user, logout } = useAuth();
   const theme = useTheme();
 
-  const appIsIdle = appState.status === AppStateStatus.IDLE;
+  // const appIsIdle = appState.status === AppStateStatus.IDLE;
   const appIsLoading = appState.status === AppStateStatus.LOADING;
-  const appIsReady = appState.status === AppStateStatus.READY;
-  const appIsError = appState.status === AppStateStatus.ERROR;
+  // const appIsReady = appState.status === AppStateStatus.READY;
+  // const appIsError = appState.status === AppStateStatus.ERROR;
 
   useEffect(() => {
     console.log('useEffect: initial');
@@ -156,7 +145,7 @@ const App: React.FC = () => {
     return defaultList ?? lists[0];
   };
 
-  const getAndUpdateList = async (listId: string) => {
+  const fetchAndUpdateListItems = async (listId: string) => {
     const controller = new AbortController();
     const signal = controller.signal;
     const options = { signal };
@@ -187,7 +176,7 @@ const App: React.FC = () => {
       const options = { signal };
       const createItemUrl = `${apiBaseUrl}/items/create`;
       await axios.post(createItemUrl, { ...item, list: listId }, options);
-      await getAndUpdateList(listId);
+      await fetchAndUpdateListItems(listId);
       setMessage({
         message: 'Item added successfully!',
         type: 'success',
@@ -219,20 +208,9 @@ const App: React.FC = () => {
       const { signal } = controller;
       const options = { signal };
       await axios.delete(deleteItemUrl, options);
-      const getListItemsUrl = `${apiBaseUrl}/items/list/${listId}`;
-      const response = await axios.get(getListItemsUrl, options);
-      setLists((prevLists) =>
-        prevLists.map((prevList) => {
-          if (prevList._id === listId) {
-            return {
-              ...prevList,
-              items: response.data,
-            };
-          }
-          return prevList;
-        })
-      );
-      // await getAndUpdateList(listId);
+      if (typeof listId === 'string') {
+        await fetchAndUpdateListItems(listId);
+      }
       const genres = await axios.get(`${apiBaseUrl}/items/genres`, options);
       setGenres(genres.data);
       setMessage({
@@ -475,23 +453,21 @@ const App: React.FC = () => {
   );
 
   return (
-    <ThemeProvider theme={Theme}>
-      <CssBaseline>
-        <TopBar appTitle="Musiqueue">
-          <GenreFilter
-            genres={genres}
-            activeGenres={activeGenres}
-            genreSetter={onSetGenres}
-          />
-        </TopBar>
-        {mainContent}
-        {message.message ? (
-          <Message type={message.type} onClear={clearMessage}>
-            {message.message}
-          </Message>
-        ) : null}
-      </CssBaseline>
-    </ThemeProvider>
+    <>
+      <TopBar appTitle="Musiqueue">
+        <GenreFilter
+          genres={genres}
+          activeGenres={activeGenres}
+          genreSetter={onSetGenres}
+        />
+      </TopBar>
+      {mainContent}
+      {message.message ? (
+        <Message type={message.type} onClear={clearMessage}>
+          {message.message}
+        </Message>
+      ) : null}
+    </>
   );
 };
 
